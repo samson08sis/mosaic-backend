@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const setupLogFile = require("../utils/setup");
 
 const logger = (req, res, next) => {
+  setupLogFile();
+
   const { method, originalUrl } = req;
   const timestamp = new Date().toISOString();
   const start = Date.now();
