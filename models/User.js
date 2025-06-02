@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "tourist", "touroperator"],
       default: "tourist",
     },
+    createdBy: {
+      type: String,
+      default: "self",
+    },
   },
   { timestamps: true }
 );

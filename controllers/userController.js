@@ -16,7 +16,8 @@ exports.getUser = async (req, res) => {
 // CREATE user
 exports.createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
-  const newUser = await User.create({ name, email, password, role });
+  const createdBy = req.user.userId;
+  const newUser = await User.create({ name, email, password, role, createdBy });
   res.status(201).json(newUser);
 };
 
