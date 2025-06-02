@@ -15,7 +15,6 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(logger);
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));

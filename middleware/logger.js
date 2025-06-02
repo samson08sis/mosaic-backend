@@ -7,7 +7,7 @@ const logger = (req, res, next) => {
   const start = Date.now();
 
   // Default to 'Guest' if not authenticated
-  const user = req.user?.email || "Guest";
+  const user = req.user?.userId || "Guest";
   const role = req.user?.role || "none";
 
   res.on("finish", () => {
