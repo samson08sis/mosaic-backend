@@ -62,7 +62,9 @@ exports.login = async (req, res) => {
 exports.getCurrentUser = async (req, res) => {
   try {
     console.log("USERR: ", req.user);
-    const user = await User.findById(req.user._id).select("-password -__v");
+    const user = await User.findById(req.user._id).select(
+      "-password -__v -createdAt -updatedAt"
+    );
 
     if (!user) {
       return res.status(404).json({
