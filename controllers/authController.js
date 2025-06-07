@@ -18,6 +18,21 @@ exports.register = async (req, res) => {
       role,
     });
 
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Set HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 86400000, // 1 day
+    });
+
     console.log("✅ New User Created:", user);
 
     res.status(201).json(user);
@@ -43,6 +58,13 @@ exports.login = async (req, res) => {
         expiresIn: "1d",
       }
     );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 86400000, // 1 day
+    });
 
     res.json({
       token,
