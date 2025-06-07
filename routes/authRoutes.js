@@ -4,6 +4,7 @@ const {
   register,
   login,
   getCurrentUser,
+  logout,
 } = require("../controllers/authController");
 const { checkRoleAndVerify } = require("../middleware/adminRoleMiddleware");
 const logger = require("../middleware/logger");
@@ -11,6 +12,7 @@ const { verifyToken } = require("../middleware/authMiddleware");
 
 router.post("/register", checkRoleAndVerify, logger, register);
 router.post("/login", logger, login);
+router.post("/logout", logger, logout);
 router.get("/me", verifyToken, logger, getCurrentUser);
 
 module.exports = router;

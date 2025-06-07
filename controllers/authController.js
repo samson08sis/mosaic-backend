@@ -81,6 +81,12 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  res.clearCookie("token", { httpOnly: true, secure: true }); // Delete the cookie
+  // Optional: Add token to a blocklist (for JWT)
+  res.sendStatus(200);
+};
+
 exports.getCurrentUser = async (req, res) => {
   try {
     console.log("USERR: ", req.user);
