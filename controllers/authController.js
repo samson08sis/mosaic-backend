@@ -58,3 +58,28 @@ exports.login = async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 };
+
+exports.getCurrentUser = async (req, res) => {
+  try {
+    console.log("USERR: ", req.user);
+    const user = await User.findById(req.user._id).select("-password -__v");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Error in getting current user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
