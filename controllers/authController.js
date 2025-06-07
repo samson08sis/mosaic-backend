@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
 
 exports.register = async (req, res) => {
   try {
@@ -112,4 +113,31 @@ exports.getCurrentUser = async (req, res) => {
       message: "Internal server error",
     });
   }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  // Check if user exists
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "User not found." });
+  }
+
+  // Generate a reset token (JWT or crypto-random)
+  const resetToken = require("crypto").randomBytes(22).toString("hex");
+  console.log("Reset Token 22: ", resetToken);
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
+  await user.save();
+
+  // Send email with reset link
+  const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  await sendEmail({
+    to: email,
+    subject: "Password Reset Request",
+    html: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
+  });
+
+  res.json({ message: "Password reset email sent." });
 };
