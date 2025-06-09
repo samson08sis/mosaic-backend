@@ -1,0 +1,21 @@
+const fs = require("fs");
+const path = require("path");
+
+const templates = {
+  passwordReset: fs.readFileSync(
+    path.join(__dirname, "../templates/password-reset-temp.html"),
+    "utf8"
+  ),
+};
+
+exports.renderTemplate = (templateName, variables) => {
+  let template = templates[templateName];
+  if (!template) throw new Error(`Template ${templateName} not found`);
+
+  // Replace all variables in template
+  for (const [key, value] of Object.entries(variables)) {
+    template = template.replace(new RegExp(`{{${key}}}`, "g"), value);
+  }
+
+  return template;
+};

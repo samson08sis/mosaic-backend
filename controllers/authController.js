@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
+const { renderTemplate } = require("../utils/emailTemplates");
 
 exports.register = async (req, res) => {
   try {
@@ -132,11 +133,22 @@ exports.forgotPassword = async (req, res) => {
   await user.save();
 
   // Send email with reset link
-  const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  const resetUrl = `https://mosaic-tour-app.vercel.app/reset-password/${resetToken}`;
+  const html = renderTemplate("passwordReset", {
+    logoUrl: "https://example.com/logo.png",
+    resetUrl,
+    expirationTime: "1 hour",
+    currentYear: new Date().getFullYear(),
+    companyName: "Mosaic Tour Ethiopia",
+    privacyPolicyUrl: "https://example.com/privacy",
+    contactUrl: "https://example.com/contact",
+    email,
+  });
+
   await sendEmail({
     to: email,
     subject: "Password Reset Request",
-    html: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`,
+    html,
   });
 
   res.json({ message: "Password reset email sent." });
