@@ -41,3 +41,9 @@ dump/
 # Uncomment one if you prefer using either npm or yarn
 # package-lock.json
 # yarn.lock
+utils/error/catchAsync.js
+utils/error/appError.js
+utils/apiFeatures.js
+routes/tourRoutes.js
+models/Tour.js
+controllers/tourControllers.js
