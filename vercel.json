@@ -2,13 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js"
+      "src": "server.js",
+      "use": "nodejs"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/index.js"
+      "dest": "server.js"
     }
   ]
 }
