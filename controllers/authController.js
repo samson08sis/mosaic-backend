@@ -132,7 +132,7 @@ exports.forgotPassword = async (req, res) => {
   await user.save();
 
   // Send email with reset link
-  const resetUrl = `https://mosaic-tour-app.vercel.app/reset-password/${resetToken}`;
+  const resetUrl = `${process.env.WEB_URL}/reset-password/${resetToken}`;
   const html = renderTemplate("passwordReset", {
     logoUrl: "https://example.com/logo.png",
     resetUrl,
