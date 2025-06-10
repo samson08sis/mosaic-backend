@@ -169,8 +169,8 @@ exports.resetPassword = async (req, res) => {
 
   // 2. Update password and clear token
   user.password = await bcrypt.hash(newPassword, 10);
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
+  delete user.resetPasswordToken;
+  delete user.resetPasswordExpires;
   await user.save();
 
   res.json({ message: "Password has been reset successfully." });
