@@ -152,3 +152,26 @@ exports.forgotPassword = async (req, res) => {
 
   res.json({ message: "Password reset email sent." });
 };
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  // 1. Find user with this token and check expiry
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    console.log("No user");
+    return res.status(400).json({ message: "Invalid or expired token." });
+  }
+
+  // 2. Update password and clear token
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  res.json({ message: "Password has been reset successfully." });
+};

@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
       default: "self",
     },
     avatar: String,
-    phone: String,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     preferences: {
       type: Object,
       default: {
