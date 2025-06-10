@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 const { renderTemplate } = require("../utils/emailTemplates");
-const hashPassword = require("../utils/hashPassword");
 
 exports.register = async (req, res) => {
   try {
@@ -12,7 +11,7 @@ exports.register = async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ msg: "User already exists" });
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
@@ -128,7 +127,6 @@ exports.forgotPassword = async (req, res) => {
 
   // Generate a reset token (JWT or crypto-random)
   const resetToken = require("crypto").randomBytes(22).toString("hex");
-  console.log("Reset Token 22: ", resetToken);
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
   await user.save();
