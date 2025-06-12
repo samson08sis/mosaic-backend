@@ -120,16 +120,16 @@ exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   // Check if user exists
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found." });
-  }
+  // const user = await User.findOne({ email });
+  // if (!user) {
+  //   return res.status(404).json({ message: "User not found." });
+  // }
 
   // Generate a reset token (JWT or crypto-random)
   const resetToken = require("crypto").randomBytes(22).toString("hex");
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
-  await user.save();
+  // user.resetPasswordToken = resetToken;
+  // user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
+  // await user.save();
 
   // Send email with reset link
   const resetUrl = `${process.env.WEB_URL}/reset-password/${resetToken}`;
