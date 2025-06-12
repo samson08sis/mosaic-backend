@@ -139,8 +139,8 @@ exports.forgotPassword = async (req, res) => {
     expirationTime: "1 hour",
     currentYear: new Date().getFullYear(),
     companyName: "Mosaic Tour Ethiopia",
-    privacyPolicyUrl: "https://example.com/privacy",
-    contactUrl: "https://example.com/contact",
+    privacyPolicyUrl: "https://mosaic-tour-app.vercel.app/privacy",
+    contactUrl: "https://mosaic-tour-app.vercel.app/contact",
     email,
   });
 
