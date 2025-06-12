@@ -6,3 +6,5 @@ const getUser = async (req, res) => {
 };
 
 router.get("/", getUser);
+
+module.exports = router;
