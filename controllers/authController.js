@@ -144,6 +144,8 @@ exports.forgotPassword = async (req, res) => {
     email,
   });
 
+  console.log(resetUrl);
+
   await sendEmail({
     to: email,
     subject: "Password Reset Request",
@@ -167,7 +169,12 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ message: "Invalid or expired token." });
   }
 
-  // 2. Update password and clear token
+  // 2. Check if password is not the same
+  const isSame = bcrypt.compare(newPassword, user.password);
+  if (isSame)
+    return res.status(400).json({ message: "Passwords must be different." });
+
+  // 3. Update password and clear token
   user.password = await bcrypt.hash(newPassword, 10);
   delete user.resetPasswordToken;
   delete user.resetPasswordExpires;
