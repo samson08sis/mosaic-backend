@@ -6,7 +6,7 @@ const { renderTemplate } = require("../utils/emailTemplates");
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ msg: "User already exists" });
@@ -17,7 +17,6 @@ exports.register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role,
     });
 
     // Generate JWT
