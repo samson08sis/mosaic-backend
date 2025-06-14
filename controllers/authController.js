@@ -90,7 +90,6 @@ exports.logout = async (req, res) => {
 
 exports.getCurrentUser = async (req, res) => {
   try {
-    console.log("USERR: ", req.user);
     const user = await User.findById(req.user._id).select(
       "-password -__v -createdAt -updatedAt"
     );
@@ -118,19 +117,8 @@ exports.getCurrentUser = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  // Check if user exists
-  // const user = await User.findOne({ email });
-  // if (!user) {
-  //   return res.status(404).json({ message: "User not found." });
-  // }
-
-  // Generate a reset token (JWT or crypto-random)
   const resetToken = require("crypto").randomBytes(22).toString("hex");
-  // user.resetPasswordToken = resetToken;
-  // user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
-  // await user.save();
 
-  // Send email with reset link
   const resetUrl = `${process.env.WEB_URL}/reset-password/${resetToken}`;
   const html = renderTemplate("passwordReset", {
     logoUrl: "https://example.com/logo.png",
