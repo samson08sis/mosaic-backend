@@ -2,27 +2,17 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      // // Optional:
-      // serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of 30s
-      // maxPoolSize: 10, // Maximum number of sockets in the connection pool
-    });
+    const conn = await mongoose.connect(process.env.MONGO_URI, {});
 
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
-
-    // const users = await mongoose.connection.db
-    //   .collection("users")
-    //   .find()
-    //   .toArray();
-    // console.log("📋 Existing Users:", users);
   } catch (error) {
     console.error("❌ MongoDB connection failed:", error.message);
-    // Graceful shutdown in case of connection failure
+    // Shutdown in case of connection failure
     process.exit(1);
   }
 };
 
-// Optional: Event listeners for better debugging
+// Event listeners for debugging
 mongoose.connection.on("connected", () => {
   console.log("❄️  Mongoose connected to DB");
 });
