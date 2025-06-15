@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const cors = require("cors");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 // Load env variables
 dotenv.config();
@@ -38,6 +39,10 @@ app.use(
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "favicon.ico"));
+});
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
