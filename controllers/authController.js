@@ -168,8 +168,8 @@ exports.resetPassword = async (req, res) => {
   }
 
   // 2. Check if password is not the same
-  const isSame = bcrypt.compare(newPassword, user.password);
-  if (isSame)
+  const isSame = await bcrypt.compare(newPassword, user.password);
+  if (isSame == true)
     return res.status(400).json({ message: "Passwords must be different." });
 
   // 3. Update password and clear token
