@@ -1,28 +1,32 @@
-const fs = require("fs");
+// COMMENTED FOR PRODUCTION
+// const fs = require("fs");
 const path = require("path");
-const setupLogFile = require("../utils/setup");
+
+// COMMENTED FOR PRODUCTION
+// const setupLogFile = require("../utils/setup");
 
 const logger = (req, res, next) => {
-  setupLogFile();
+  // COMMENTED FOR PRODUCTION
+  // setupLogFile();
 
   const { method, originalUrl } = req;
   const timestamp = new Date().toISOString();
   const start = Date.now();
 
-  // Default to 'Guest' if not authenticated
   const user = req.user?.userId || "Guest";
   const role = req.user?.role || "none";
 
   res.on("finish", () => {
     const log = `[${timestamp}] ${method} ${originalUrl} - User: ${user}, Role: ${role} Response status: ${res.statusCode}\n`;
 
-    fs.appendFile(
-      path.join(__dirname, "..", "logs", "access.log"),
-      log,
-      (err) => {
-        if (err) console.error("Logging failed:", err);
-      }
-    );
+    // COMMENTED FOR PRODUCTION
+    // fs.appendFile(
+    //   path.join(__dirname, "..", "logs", "access.log"),
+    //   log,
+    //   (err) => {
+    //     if (err) console.error("Logging failed:", err);
+    //   }
+    // );
 
     console.table([
       {
