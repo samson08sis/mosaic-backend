@@ -14,10 +14,22 @@ connectDB();
 // ✅ Initialize app BEFORE using it
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://mosaic-tour-app.vercel.app",
+];
+
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true, // Required for cookies/auth headers
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // needed methods
     allowedHeaders: ["Content-Type", "Authorization"], // needed headers
