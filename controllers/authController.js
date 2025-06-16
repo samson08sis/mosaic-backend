@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 const { renderTemplate } = require("../utils/emailTemplates");
+const generateToken = require("../utils/generateToken");
 
 exports.register = async (req, res) => {
   try {
@@ -20,11 +21,7 @@ exports.register = async (req, res) => {
     });
 
     // Generate JWT
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = generateToken({ userId: user._id });
 
     // Set HTTP-only cookie
     res.cookie("token", token, {
@@ -52,13 +49,7 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1d",
-      }
-    );
+    const token = generateToken({ userId: user._id });
 
     res.cookie("token", token, {
       httpOnly: true,
