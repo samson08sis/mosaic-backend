@@ -23,18 +23,30 @@ exports.register = async (req, res) => {
     const token = generateToken({ userId: user._id });
 
     // Set HTTP-only cookie
-    res.cookie("token", token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 86400000, // 1 day
-    });
+      expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN),
+    };
 
     console.log("✅ New User Created:", user);
 
-    res.status(201).json(user);
+    res
+      .status(201)
+      .cookie("token", token, cookieOptions)
+      .json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
   } catch (error) {
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ success: false, msg: error.message });
   }
 };
 
