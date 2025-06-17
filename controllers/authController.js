@@ -4,6 +4,9 @@ const sendEmail = require("../utils/sendEmail");
 const { renderTemplate } = require("../utils/emailTemplates");
 const generateToken = require("../utils/tokenActions");
 
+// @desc   Register user
+// @route   POST /api/auth/register
+// @access  Public
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -50,6 +53,9 @@ exports.register = async (req, res) => {
   }
 };
 
+// @desc    Login user
+// @route   GET /api/auth/login
+// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -84,12 +90,18 @@ exports.login = async (req, res) => {
   }
 };
 
+// @desc    Get current user
+// @route   GET /api/auth/logout
+// @access  Private
 exports.logout = async (req, res) => {
   res.clearCookie("token", { httpOnly: true, secure: true }); // Delete the cookie
   // Optional: Add token to a blocklist (for JWT)
   res.sendStatus(200);
 };
 
+// @desc    Get current user
+// @route   GET /api/auth/me
+// @access  Private
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select(
@@ -116,6 +128,9 @@ exports.getCurrentUser = async (req, res) => {
   }
 };
 
+// @desc    Request for a password reset link
+// @route   GET /api/auth/forgot-password
+// @access  Private
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -155,6 +170,9 @@ exports.forgotPassword = async (req, res) => {
   res.json({ message: "Password reset email sent." });
 };
 
+// @desc    Reset Forgotten password
+// @route   GET /api/auth/reset-password
+// @access  Private
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
