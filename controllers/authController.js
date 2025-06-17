@@ -1,8 +1,9 @@
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sendEmail");
 const { renderTemplate } = require("../utils/emailTemplates");
 const generateToken = require("../utils/tokenActions");
+
+// ////////////////////////////////////////////////////////////////////////////////////////
 
 // @desc   Register user
 // @route   POST /api/auth/register
@@ -14,12 +15,10 @@ exports.register = async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ msg: "User already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
     });
 
     // Generate JWT
@@ -63,7 +62,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.compare(password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
     const token = generateToken({ userId: user._id });
@@ -188,12 +187,12 @@ exports.resetPassword = async (req, res) => {
   }
 
   // 2. Check if password is not the same
-  const isSame = await bcrypt.compare(newPassword, user.password);
+  const isSame = await user.compare(newPassword);
   if (isSame == true)
     return res.status(400).json({ message: "Passwords must be different." });
 
   // 3. Update password and clear token
-  user.password = await bcrypt.hash(newPassword, 10);
+  user.password = newPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
   await user.save();
