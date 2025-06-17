@@ -10,7 +10,7 @@ const sendEmail = async ({ to, subject, html }) => {
   });
 
   await transporter.sendMail({
-    from: '"Mosaic Tour Ethiopia" <no-reply@yourapp.com>',
+    from: `"Mosaic Tour Ethiopia" no-reply@${process.env.WEB_URN}`,
     to,
     subject,
     html,
