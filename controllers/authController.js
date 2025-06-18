@@ -1,9 +1,7 @@
 const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
 const { renderTemplate } = require("../utils/emailTemplates");
-const generateToken = require("../utils/tokenActions");
-
-// ////////////////////////////////////////////////////////////////////////////////////////
+const { generateToken } = require("../utils/tokenActions");
 
 // @desc   Register user
 // @route   POST /api/auth/register
