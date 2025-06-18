@@ -12,9 +12,9 @@ const { checkRoleAndVerify } = require("../middleware/adminRoleMiddleware");
 const logger = require("../middleware/logger");
 const { verifyToken } = require("../middleware/authMiddleware");
 
-router.post("/register", checkRoleAndVerify, register);
+router.post("/register", logger, register);
 router.post("/login", login);
-router.post("/logout", logout);
+router.get("/logout", logout);
 router.get("/me", verifyToken, getCurrentUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
