@@ -27,7 +27,9 @@ exports.register = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN),
+      expires: new Date(
+        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      ),
     };
 
     console.log("✅ New User Created:", user);
@@ -57,6 +59,13 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide an email and password",
+      });
+    }
+
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
@@ -65,25 +74,31 @@ exports.login = async (req, res) => {
 
     const token = generateToken({ userId: user._id });
 
-    res.cookie("token", token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 86400000, // 1 day
-    });
+      expires: new Date(
+        Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      ),
+    };
 
-    res.json({
-      token,
-      user: {
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        preferences: user.preferences,
-      },
-    });
+    res
+      .status(200)
+      .cookie("token", token, cookieOptions)
+      .json({
+        success: true,
+        token,
+        user: {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          preferences: user.preferences,
+        },
+      });
   } catch (error) {
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ success: false, msg: error.message });
   }
 };
 
