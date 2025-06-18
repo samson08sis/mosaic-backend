@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false },
     phone: String,
     address: String,
     bio: String,
@@ -32,8 +32,8 @@ const UserSchema = new mongoose.Schema(
       default: "self",
     },
     avatar: String,
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
     preferences: {
       type: Object,
       default: {
@@ -49,7 +49,7 @@ const UserSchema = new mongoose.Schema(
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(password, salt);
+    this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });
