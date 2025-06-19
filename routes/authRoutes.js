@@ -11,12 +11,18 @@ const {
 const { checkRoleAndVerify } = require("../middleware/adminRoleMiddleware");
 const logger = require("../middleware/logger");
 const { verifyToken } = require("../middleware/authMiddleware");
+const {
+  validateForgotPassword,
+  validateResetPassword,
+  validateLogin,
+  validateRegister,
+} = require("../middleware/validateRequest");
 
-router.post("/register", logger, register);
-router.post("/login", login);
+router.post("/register", validateRegister, logger, register);
+router.post("/login", validateLogin, login);
 router.get("/logout", logout);
 router.get("/me", verifyToken, getCurrentUser);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/forgot-password", validateForgotPassword, forgotPassword);
+router.post("/reset-password", validateResetPassword, resetPassword);
 
 module.exports = router;
