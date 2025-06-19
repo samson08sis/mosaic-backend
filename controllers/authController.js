@@ -206,7 +206,7 @@ exports.resetPassword = async (req, res) => {
   }
 
   // 2. Check if password is not the same
-  const isSame = await user.compare(newPassword);
+  const isSame = await user.comparePassword(newPassword);
   if (isSame == true)
     return res.status(400).json({ message: "Passwords must be different." });
 
