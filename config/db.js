@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
+    const connectionState = mongoose.connection.readyState;
+    if (connectionState === 1) {
+      console.log("❄️  Mongoose already connected");
+      return;
+    }
+
     const conn = await mongoose.connect(process.env.MONGO_URI, {});
 
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
