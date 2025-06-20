@@ -122,8 +122,8 @@ exports.logout = async (req, res) => {
 // @access  Private
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select(
-      "-password -__v -createdAt -updatedAt"
+    const user = await User.findById(req.user.id).select(
+      "-__v -createdAt -updatedAt"
     );
 
     if (!user) {
@@ -150,42 +150,56 @@ exports.getCurrentUser = async (req, res) => {
 // @route   GET /api/auth/forgot-password
 // @access  Private
 exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  // Check if user exists
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found." });
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Generate a reset token
+    const resetToken = user.getResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    try {
+      // Send email with reset link
+      const resetUrl = `${process.env.WEB_URL}/reset-password/${resetToken}`;
+
+      // Prepare email-tempate for password reset
+      const html = renderTemplate("passwordReset", {
+        logoUrl: "https://example.com/logo.png",
+        resetUrl,
+        expirationTime: "1 hour",
+        currentYear: new Date().getFullYear(),
+        companyName: "Mosaic Tour Ethiopia",
+        privacyPolicyUrl: "https://mosaic-tour-app.vercel.app/privacy",
+        contactUrl: "https://mosaic-tour-app.vercel.app/contact",
+        email,
+      });
+
+      console.log(resetUrl);
+
+      await sendEmail({
+        to: email,
+        subject: "Password Reset Request",
+        html,
+      });
+
+      res.json({ success: true, message: "Password reset email sent." });
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error." });
+    }
+  } catch (err) {
+    console.error("Error in forgotPassword:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error." });
   }
-
-  // Generate a reset token (JWT or crypto-random)
-  const resetToken = require("crypto").randomBytes(22).toString("hex");
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
-  await user.save();
-
-  // Send email with reset link
-  const resetUrl = `${process.env.WEB_URL}/reset-password/${resetToken}`;
-  const html = renderTemplate("passwordReset", {
-    logoUrl: "https://example.com/logo.png",
-    resetUrl,
-    expirationTime: "1 hour",
-    currentYear: new Date().getFullYear(),
-    companyName: "Mosaic Tour Ethiopia",
-    privacyPolicyUrl: "https://mosaic-tour-app.vercel.app/privacy",
-    contactUrl: "https://mosaic-tour-app.vercel.app/contact",
-    email,
-  });
-
-  console.log(resetUrl);
-
-  await sendEmail({
-    to: email,
-    subject: "Password Reset Request",
-    html,
-  });
-
-  res.json({ message: "Password reset email sent." });
 };
 
 // @desc    Reset Forgotten password
@@ -194,21 +208,28 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
-  // 1. Find user with this token and check expiry
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
   const user = await User.findOne({
-    resetPasswordToken: token,
+    resetPasswordToken,
     resetPasswordExpires: { $gt: Date.now() },
   });
 
   if (!user) {
-    console.log("No user");
-    return res.status(400).json({ message: "Invalid or expired token." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token." });
   }
 
   // 2. Check if password is not the same
   const isSame = await user.comparePassword(newPassword);
   if (isSame == true)
-    return res.status(400).json({ message: "Passwords must be different." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords must be different." });
 
   // 3. Update password and clear token
   user.password = newPassword;
