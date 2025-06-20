@@ -171,7 +171,7 @@ exports.forgotPassword = async (req, res) => {
       const html = renderTemplate("passwordReset", {
         logoUrl: "https://example.com/logo.png",
         resetUrl,
-        expirationTime: "1 hour",
+        expirationTime: "30 minutes",
         currentYear: new Date().getFullYear(),
         companyName: "Mosaic Tour Ethiopia",
         privacyPolicyUrl: "https://mosaic-tour-app.vercel.app/privacy",
