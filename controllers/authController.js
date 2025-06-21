@@ -13,11 +13,44 @@ exports.register = async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ msg: "User already exists" });
 
-    const user = await User.create({
+    const user = new User({
       name,
       email,
       password,
     });
+
+    const verificationToken = user.getEmailVerificationToken();
+    await user.save();
+
+    try {
+      const verificationUrl = `${process.env.WEB_URL}/verify-email/${verificationToken}`;
+      const html = renderTemplate("emailVerification", {
+        logoUrl: "#",
+        verificationUrl,
+        expirationTime: "30 minutes",
+        currentYear: new Date().getFullYear(),
+        companyName: "Mosaic Tour Ethiopia",
+        privacyPolicyUrl: `${process.env.WEB_URL}/privacy`,
+        termsUrl: `${process.env.WEB_URL}/termsOfService`,
+        contactUrl: `${process.env.WEB_URL}/contact`,
+        facebookUrl: "#",
+        twitterUrl: "#",
+        instagramUrl: "#",
+        email,
+      });
+
+      await sendEmail({
+        to: email,
+        subject: "User Mail Verification",
+        html,
+      });
+    } catch (error) {
+      console.error("Error sending password verification email:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Problem sending verification email.",
+      });
+    }
 
     // Generate JWT
     const token = generateToken({ userId: user._id });
@@ -32,8 +65,6 @@ exports.register = async (req, res) => {
       ),
     };
 
-    console.log("✅ New User Created:", user);
-
     res
       .status(201)
       .cookie("token", token, cookieOptions)
@@ -46,6 +77,7 @@ exports.register = async (req, res) => {
           email: user.email,
           role: user.role,
         },
+        message: "Verification email sent. Please check your inbox.",
       });
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
@@ -169,13 +201,13 @@ exports.forgotPassword = async (req, res) => {
 
       // Prepare email-tempate for password reset
       const html = renderTemplate("passwordReset", {
-        logoUrl: "https://example.com/logo.png",
+        logoUrl: "#",
         resetUrl,
         expirationTime: "30 minutes",
         currentYear: new Date().getFullYear(),
         companyName: "Mosaic Tour Ethiopia",
-        privacyPolicyUrl: "https://mosaic-tour-app.vercel.app/privacy",
-        contactUrl: "https://mosaic-tour-app.vercel.app/contact",
+        privacyPolicyUrl: `${process.env.WEB_URL}/privacy`,
+        contactUrl: `${process.env.WEB_URL}/contact`,
         email,
       });
 
@@ -190,9 +222,10 @@ exports.forgotPassword = async (req, res) => {
       res.json({ success: true, message: "Password reset email sent." });
     } catch (error) {
       console.error("Error sending password reset email:", error);
-      return res
-        .status(500)
-        .json({ success: false, message: "Internal server error." });
+      return res.status(500).json({
+        success: false,
+        message: "Problem sending password reset email.",
+      });
     }
   } catch (err) {
     console.error("Error in forgotPassword:", err);

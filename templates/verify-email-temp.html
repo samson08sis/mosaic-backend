@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Arizonia&family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+      }
+      .logo {
+        max-height: 50px;
+      }
+      .arizonia-regular {
+        font-family: "Arizonia", cursive;
+        font-weight: 400;
+        font-style: normal;
+      }
+      .logo-text {
+        color: white;
+        font-size: 36px;
+        margin: 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .email-title {
+        font-weight: 600;
+        font-size: 24px;
+        margin: 10px 0 0;
+      }
+      .content {
+        padding: 30px;
+        background-color: white;
+      }
+      .welcome-text {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        transition: all 0.3s ease;
+      }
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+      }
+      .info-box {
+        background-color: #f0f7ff;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 25px 0;
+        border-left: 4px solid #2563eb;
+      }
+      .info-title {
+        font-weight: 600;
+        color: #1e40af;
+        margin-top: 0;
+      }
+      .link-text {
+        word-break: break-all;
+        background-color: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #555;
+      }
+      .footer {
+        font-size: 13px;
+        color: #666666;
+        text-align: center;
+        padding: 25px 30px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #eeeeee;
+      }
+      .social-links {
+        margin: 15px 0;
+      }
+      .social-links a {
+        margin: 0 10px;
+        text-decoration: none;
+      }
+      .icon {
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2 class="arizonia-regular logo-text">MosaicEthiopia</h2>
+        <h2 class="email-title">Verify Your Email Address</h2>
+      </div>
+
+      <div class="content">
+        <p class="welcome-text">Hello there,</p>
+
+        <p>
+          Welcome to MosaicEthiopia! We're excited to have you on board. To get
+          started, please verify your email address by clicking the button
+          below:
+        </p>
+
+        <div class="button-container">
+          <a href="{{verificationUrl}}" class="button">Verify Email Address</a>
+        </div>
+
+        <div class="info-box">
+          <h3 class="info-title">Didn't request this email?</h3>
+          <p>
+            If you didn't create an account with MosaicEthiopia, please ignore
+            this email or
+            <a href="{{contactUrl}}" style="color: #2563eb"
+              >contact our support team</a
+            >
+            if you have any concerns. This verification link will expire in
+            {{expirationTime}}.
+          </p>
+        </div>
+
+        <p>
+          If the button above doesn't work, copy and paste this link into your
+          browser:
+        </p>
+        <p class="link-text">{{verificationUrl}}</p>
+
+        <p>
+          Once verified, you'll have full access to your account and all our
+          services.
+        </p>
+
+        <p>
+          Best regards,<br />
+          The MosaicEthiopia Team
+        </p>
+      </div>
+
+      <div class="footer">
+        <div class="social-links">
+          <a href="{{facebookUrl}}">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/124/124010.png"
+              alt="Facebook"
+              class="icon" />
+          </a>
+          <a href="{{twitterUrl}}">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/733/733579.png"
+              alt="Twitter"
+              class="icon" />
+          </a>
+          <a href="{{instagramUrl}}">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png"
+              alt="Instagram"
+              class="icon" />
+          </a>
+        </div>
+        <p>© {{currentYear}} {{companyName}}. All rights reserved.</p>
+        <p>
+          <a
+            href="{{privacyPolicyUrl}}"
+            style="color: #2563eb; text-decoration: none"
+            >Privacy Policy</a
+          >
+          |
+          <a href="{{termsUrl}}" style="color: #2563eb; text-decoration: none"
+            >Terms of Service</a
+          >
+          |
+          <a href="{{contactUrl}}" style="color: #2563eb; text-decoration: none"
+            >Contact Us</a
+          >
+        </p>
+        <p>
+          This email was sent to {{email}} as part of your MosaicEthiopia
+          account registration.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

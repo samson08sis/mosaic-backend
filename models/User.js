@@ -17,6 +17,12 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
+    verified: {
+      type: Boolean,
+      detault: false,
+    },
+    verifiedAt: Date,
+    verificationId: { type: String, select: false },
     password: { type: String, required: true, select: false },
     phone: String,
     address: String,
@@ -34,6 +40,8 @@ const UserSchema = new mongoose.Schema(
     avatar: String,
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
     preferences: {
       type: Object,
       default: {
@@ -76,6 +84,24 @@ UserSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordExpires = Date.now() + 30 * 60 * 1000;
 
   return resetToken;
+};
+
+UserSchema.methods.getEmailVerificationToken = function () {
+  // Generate token
+  const verificationToken = crypto
+    .randomBytes(process.env.CRYPTO_TOKEN_LENGTH * 1)
+    .toString("hex");
+
+  // Hash token and set to emailVerificationToken field
+  this.emailVerificationToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+
+  // Set expire (30 minutes)
+  this.emailVerificationExpires = Date.now() + 30 * 60 * 1000;
+
+  return verificationToken;
 };
 
 module.exports = mongoose.model("User", UserSchema);
