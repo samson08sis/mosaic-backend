@@ -37,7 +37,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "self",
     },
-    avatar: String,
+    avatar: { type: String, default: "https://picsum.photos/300/300?random=1" },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
     emailVerificationToken: { type: String, select: false },
