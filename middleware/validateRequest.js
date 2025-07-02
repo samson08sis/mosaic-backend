@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const { CRYPTO_TOKEN_LENGTH } = process.env;
 
 // Extend the body validator with custom methods
 
@@ -22,14 +23,14 @@ const validatePassword = (field = "password") => {
     .withMessage("Password must be a valid string")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters")
-    .isLength({ max: 30 })
-    .withMessage("Password cannot exceed 30 characters")
-    .matches(/\d/)
-    .withMessage("Password must contain a number")
     .matches(/[a-z]/)
     .withMessage("Password must contain a lowercase letter")
     .matches(/[A-Z]/)
     .withMessage("Password must contain an uppercase letter")
+    .isLength({ max: 30 })
+    .withMessage("Password cannot exceed 30 characters")
+    .matches(/\d/)
+    .withMessage("Password must contain a number")
     .matches(/[^a-zA-Z0-9]/)
     .withMessage("Password must contain a special character")
     .not()
@@ -49,8 +50,8 @@ const validateName = (field = "name") => {
 };
 
 const validateToken = (
-  minLength = process.env.CRYPTO_TOKEN_LENGTH * 2,
-  maxLength = process.env.CRYPTO_TOKEN_LENGTH * 2,
+  minLength = CRYPTO_TOKEN_LENGTH * 2,
+  maxLength = CRYPTO_TOKEN_LENGTH * 2,
   field = "token"
 ) => {
   return body(field)
