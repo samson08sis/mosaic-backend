@@ -74,11 +74,11 @@ exports.register = async (req, res) => {
 
       console.log(verificationUrl);
 
-      // await sendEmail({
-      //   to: email,
-      //   subject: "User Mail Verification",
-      //   html,
-      // });
+      await sendEmail({
+        to: email,
+        subject: "User Mail Verification",
+        html,
+      });
     } catch (error) {
       // Non-interruptive handling.
       console.log(
@@ -247,11 +247,11 @@ exports.forgotPassword = async (req, res) => {
 
       console.log(resetUrl);
 
-      // await sendEmail({
-      //   to: email,
-      //   subject: "Password Reset Request",
-      //   html,
-      // });
+      await sendEmail({
+        to: email,
+        subject: "Password Reset Request",
+        html,
+      });
 
       res.json({ success: true, message: "Password reset email sent." });
     } catch (error) {
