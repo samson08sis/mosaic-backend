@@ -93,8 +93,8 @@ const validateRegister = [
 const validateForgotPassword = [validateEmail(), validationMiddleware];
 
 const validateResetPassword = [
-  validatePassword(),
-  validateToken(),
+  validatePassword((field = "newPassword")),
+  // validateToken(),
   validationMiddleware,
 ];
 

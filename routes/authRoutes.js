@@ -7,6 +7,8 @@ const {
   logout,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  sendVerification,
 } = require("../controllers/authController");
 const { checkRoleAndVerify } = require("../middleware/adminRoleMiddleware");
 const logger = require("../middleware/logger");
@@ -24,5 +26,7 @@ router.get("/logout", logout);
 router.get("/me", verifyToken, getCurrentUser);
 router.post("/forgot-password", validateForgotPassword, forgotPassword);
 router.post("/reset-password", validateResetPassword, resetPassword);
+router.post("/verify-email", verifyEmail);
+router.post("/send-email-verification", verifyToken, sendVerification);
 
 module.exports = router;

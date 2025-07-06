@@ -15,8 +15,8 @@ const getAllUsers = async (req, res) => {
 router.get("/", getUser);
 router.get("/users", getAllUsers);
 router.get("/forgot-pwd", (req, res) => {
-  return res.sendFile("index.htm", {
-    root: "C:\\Users\\b\\Documents\\next\\mosaic-backend",
+  return res.sendFile("new-template.htm", {
+    root: "C:\\Users\\b\\Documents\\next\\mosaic-backend\\templates",
   });
 });
 

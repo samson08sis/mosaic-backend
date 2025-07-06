@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
+const { CRYPTO_TOKEN_LENGTH } = process.env;
 
 const UserSchema = new mongoose.Schema(
   {
@@ -15,6 +16,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
     verified: {
@@ -22,12 +24,31 @@ const UserSchema = new mongoose.Schema(
       detault: false,
     },
     verifiedAt: Date,
-    verificationId: { type: String, select: false },
-    password: { type: String, required: true, select: false },
+    password: {
+      type: String,
+      // this doesn't reffer to the object in arrow functions
+      required: function () {
+        return this.provider === "local"; // Only required for local auth
+      },
+      select: false,
+    },
     phone: String,
     address: String,
     bio: String,
     country: String,
+    provider: {
+      type: String,
+      required: true,
+      enum: ["local", "google", "facebook", "apple", "github"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      required: function () {
+        return this.provider === "google";
+      },
+      select: false,
+    },
     role: {
       type: String,
       enum: ["admin", "tourist", "touroperator"],
@@ -37,11 +58,17 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "self",
     },
-    avatar: { type: String, default: "https://picsum.photos/300/300?random=1" },
+    avatar: {
+      type: String,
+      default: `https://picsum.photos/id/${Math.floor(
+        Math.random() * 1001
+      )}/300/300`,
+    },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
+    refreshToken: String,
     preferences: {
       type: Object,
       default: {
@@ -71,7 +98,7 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
 UserSchema.methods.getResetPasswordToken = function () {
   // Generate token
   const resetToken = crypto
-    .randomBytes(process.env.CRYPTO_TOKEN_LENGTH * 1)
+    .randomBytes(CRYPTO_TOKEN_LENGTH * 1)
     .toString("hex");
 
   // Hash token and set to resetPasswordToken field
@@ -86,10 +113,22 @@ UserSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
+UserSchema.methods.getPublicProfile = function () {
+  return {
+    name: this.name,
+    email: this.email,
+    verified: this.verified,
+    role: this.role,
+    avatar: this.avatar,
+    preferences: this.preferences,
+    joined: this.createdAt,
+  };
+};
+
 UserSchema.methods.getEmailVerificationToken = function () {
   // Generate token
   const verificationToken = crypto
-    .randomBytes(process.env.CRYPTO_TOKEN_LENGTH * 1)
+    .randomBytes(CRYPTO_TOKEN_LENGTH * 1)
     .toString("hex");
 
   // Hash token and set to emailVerificationToken field
@@ -102,6 +141,22 @@ UserSchema.methods.getEmailVerificationToken = function () {
   this.emailVerificationExpires = Date.now() + 30 * 60 * 1000;
 
   return verificationToken;
+};
+
+UserSchema.methods.verifyEmailToken = function (token) {
+  // 1. Hash the incoming token
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // 2. Compare with stored hash and check expiration
+  return (
+    this.emailVerificationToken === hashedToken &&
+    this.emailVerificationExpires > Date.now()
+  );
+};
+
+UserSchema.methods.clearVerificationToken = function () {
+  this.emailVerificationToken = undefined;
+  this.emailVerificationExpires = undefined;
 };
 
 module.exports = mongoose.model("User", UserSchema);

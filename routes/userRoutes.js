@@ -8,26 +8,26 @@ const {
   deleteUser,
 } = require("../controllers/userController");
 
-const { protect } = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
 // Public (for testing read only)
 router.get(
   "/",
   // protect,
-  // authorizeRoles("admin", "tourist", "touroperator"),
+  authorizeRoles("admin"),
   getUsers
 );
 router.get(
   "/:id",
-  protect,
-  authorizeRoles("admin", "tourist", "touroperator"),
+  // protect,
+  // authorizeRoles("admin", "tourist", "touroperator"),
   getUser
 );
 
 // Admin only
 router.post("/", createUser);
-router.put("/:id", protect, authorizeRoles("admin"), updateUser);
-router.delete("/:id", protect, authorizeRoles("admin"), deleteUser);
+router.put("/:id", verifyToken, authorizeRoles("admin"), updateUser);
+router.delete("/:id", verifyToken, authorizeRoles("admin"), deleteUser);
 
 module.exports = router;

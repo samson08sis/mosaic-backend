@@ -1,3 +1,5 @@
+const { verifyToken } = require("./authMiddleware");
+
 exports.checkRoleAndVerify = async (req, res, next) => {
   const { role } = req.body;
   console.log("Role verification middleware");

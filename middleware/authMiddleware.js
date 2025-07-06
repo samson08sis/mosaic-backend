@@ -1,32 +1,74 @@
 const User = require("../models/User");
-const verifyToken = require("../utils/tokenActions");
+const {
+  verifyAccessToken,
+  verifyRefreshToken,
+  generateAccessToken,
+} = require("../utils/tokenActions");
 
 exports.verifyToken = async (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token, auth denied" });
+  const { accessToken, refreshToken } = req.cookies;
 
-  try {
-    const decoded = verifyToken(token);
-    req.user = await User.findById(decoded.userId).select("-password");
-    next();
-  } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
-  }
-};
-
-exports.protect = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ msg: "No token provided" });
+  if (!accessToken && !refreshToken) {
+    return res.status(401).json({
+      message: "Authentication required",
+    });
   }
 
-  const token = authHeader.split(" ")[1];
-
-  try {
-    const decoded = verifyToken(token);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ msg: "Invalid or expired token" });
+  if (accessToken && refreshToken) {
+    try {
+      const decoded = verifyAccessToken(accessToken);
+      const user = decoded.userId;
+      req.user = user;
+      return next();
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        // Refresh the token
+        // For now, just return Unauthorized.
+        return res.status(401).json({
+          message: "Token expired",
+        });
+      } else {
+        res.clearCookie("accessToken");
+        return res.status(401).json({
+          message: "Invalid token",
+        });
+      }
+    }
   }
+
+  if (refreshToken) {
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+
+      const user = await User.findOne({
+        _id: decoded.userId,
+        refreshToken,
+      });
+      if (!user) throw new Error("Refresh token revoked");
+
+      const newAccessToken = generateAccessToken(user);
+
+      // Set new cookie
+      res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 mins
+      });
+
+      req.user = decoded.userId;
+      return next();
+    } catch (err) {
+      res.clearCookie("refreshToken");
+      return res.status(401).json({
+        message: "Session expired. Please log in again.",
+      });
+    }
+  }
+
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  res.status(401).json({
+    message: "Authentication required",
+  });
 };
