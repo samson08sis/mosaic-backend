@@ -1,7 +1,7 @@
 const { configDotenv } = require("dotenv");
 const mongoose = require("mongoose");
 configDotenv(); // Load environment variables in config files
-const { LOCAL_MONGO_URI } = process.env;
+const { MONGO_URI } = process.env;
 
 const connectDB = async () => {
   try {
@@ -10,8 +10,8 @@ const connectDB = async () => {
       console.log("❄️  Mongoose already connected");
       return;
     }
-    console.log("URI: ", LOCAL_MONGO_URI);
-    const conn = await mongoose.connect(LOCAL_MONGO_URI, {});
+    console.log("URI: ", MONGO_URI);
+    const conn = await mongoose.connect(MONGO_URI, {});
 
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
