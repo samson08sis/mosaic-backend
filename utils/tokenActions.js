@@ -44,7 +44,7 @@ const verifyToken = (token) => {
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: NODE_ENV === "production",
-  sameSite: "strict",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   expires: new Date(Date.now() + JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
 };
 
