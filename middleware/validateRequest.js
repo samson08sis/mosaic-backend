@@ -45,8 +45,10 @@ const validateName = (field = "name") => {
     .withMessage("Name can not be empty")
     .isString()
     .withMessage("Name must be a valid string")
-    .isLength({ min: 2, max: 50 })
-    .withMessage("Name must be at least 2 characters and max 50 characters");
+    .isLength({ min: 2 })
+    .withMessage("Name must be at least 2 characters")
+    .isLength({ max: 50 })
+    .withMessage("Name must be at most 50 characters");
 };
 
 const validateToken = (

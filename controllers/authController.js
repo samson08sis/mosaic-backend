@@ -18,7 +18,8 @@ exports.register = async (req, res) => {
     const { name, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ msg: "User already exists" });
+    if (userExists)
+      return res.status(400).json({ msg: "User already registered" });
 
     const user = new User({
       name,
@@ -49,7 +50,7 @@ exports.register = async (req, res) => {
       });
     } catch (err) {
       console.log(`PROBLEM SETTING COOKIES: ${err.message}`);
-      res.json({ success: false, message: err.message });
+      res.json({ success: false, msg: err.message });
     }
 
     try {
@@ -92,7 +93,7 @@ exports.register = async (req, res) => {
       success: true,
       user: userData,
       token: accessToken,
-      message: "Verification email sent. Please check your inbox.",
+      msg: "Verification email sent. Please check your inbox.",
     });
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
@@ -147,7 +148,7 @@ exports.login = async (req, res) => {
       });
     } catch (err) {
       console.log(`Problem setting cookies: ${err.message}`);
-      res.status(500).json({ success: false, message: err.message });
+      res.status(500).json({ success: false, msg: err.message });
     }
 
     const userData = user.getPublicProfile();
@@ -182,7 +183,7 @@ exports.logout = async (req, res) => {
     }
   }
 
-  res.sendStatus(200);
+  res.status(200).json({ msg: "Login failed. Please try again." });
 };
 
 // @desc    Get current user
@@ -195,10 +196,10 @@ exports.getCurrentUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        msg: "User not found",
       });
     }
-
+    console.log(user.avatar);
     res.status(200).json({
       success: true,
       user: user.getPublicProfile(),
@@ -207,7 +208,7 @@ exports.getCurrentUser = async (req, res) => {
     console.error("Error in getting current user:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error",
+      msg: "Internal server error",
     });
   }
 };
@@ -222,7 +223,7 @@ exports.forgotPassword = async (req, res) => {
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ msg: "User not found." });
     }
 
     // Generate a reset token
@@ -253,19 +254,19 @@ exports.forgotPassword = async (req, res) => {
         html,
       });
 
-      res.json({ success: true, message: "Password reset email sent." });
+      res.json({ success: true, msg: "Password reset email sent." });
     } catch (error) {
       console.error("Error sending password reset email:", error);
       return res.status(500).json({
         success: false,
-        message: "Problem sending password reset email.",
+        msg: "Problem sending password reset email.",
       });
     }
   } catch (err) {
     console.error("Error in forgotPassword:", err);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error." });
+      .json({ success: false, msg: "Internal server error." });
   }
 };
 
@@ -289,7 +290,7 @@ exports.resetPassword = async (req, res) => {
     if (!user) {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid or expired token." });
+        .json({ success: false, msg: "Invalid or expired token." });
     }
 
     const isSame = await user.comparePassword(newPassword);
@@ -304,7 +305,7 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
-    res.json({ message: "Password has been reset successfully." });
+    res.json({ msg: "Password has been reset successfully." });
   } catch (err) {
     console.log(err.message);
     res.sendStatus(500);
@@ -321,7 +322,7 @@ exports.verifyEmail = async (req, res) => {
     if (!token) {
       res.status(400).json({
         success: false,
-        message: "Verification token is required",
+        msg: "Verification token is required",
       });
     }
 
@@ -337,7 +338,7 @@ exports.verifyEmail = async (req, res) => {
     if (!user) {
       res.status(400).json({
         success: false,
-        message: "Invalid or expired verification token",
+        msg: "Invalid or expired verification token",
       });
     }
 
@@ -374,12 +375,12 @@ exports.verifyEmail = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Email verified successfully",
+      msg: "Email verified successfully",
       // user: userData,
     });
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, msg: err.message });
   }
 };
 
@@ -394,7 +395,7 @@ exports.sendVerification = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        msg: "User not found",
       });
     }
 
@@ -403,7 +404,7 @@ exports.sendVerification = async (req, res) => {
       console.log("Already verified!");
       return res.status(200).json({
         success: true,
-        message: "Email is already verified",
+        msg: "Email is already verified",
       });
     }
 
@@ -429,7 +430,7 @@ exports.sendVerification = async (req, res) => {
       });
 
       // For testing
-      // console.log("Verification URL:", verificationUrl);
+      console.log("Verification URL:", verificationUrl);
 
       await sendEmail({
         to: user.email,
@@ -444,7 +445,7 @@ exports.sendVerification = async (req, res) => {
     // 5. Respond to client immediately
     return res.status(200).json({
       success: true,
-      message: "Verification email sent successfully",
+      msg: "Verification email sent successfully",
       ...(process.env.NODE_ENV === "development" && {
         debugToken: verificationToken,
       }),
@@ -452,7 +453,7 @@ exports.sendVerification = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Failed to process your request ",
+      msg: "Failed to process your request ",
       ...(process.env.NODE_ENV === "development" && {
         error: error.message,
       }),
