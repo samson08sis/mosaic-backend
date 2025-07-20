@@ -430,11 +430,11 @@ exports.sendVerification = async (req, res) => {
       // For testing
       console.log("Verification URL:", verificationUrl);
 
-      // await sendEmail({
-      //   to: user.email,
-      //   subject: "User Mail Verification",
-      //   html,
-      // });
+      await sendEmail({
+        to: user.email,
+        subject: "User Mail Verification",
+        html,
+      });
     } catch (error) {
       console.error(`Email sending error to ${user.email}:`, error.message);
     }
