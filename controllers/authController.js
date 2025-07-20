@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists)
-      return res.status(400).json({ msg: "User already registered" });
+      return res.status(400).json({ msg: "Email already registered" });
 
     const user = new User({
       name,
@@ -53,39 +53,39 @@ exports.register = async (req, res) => {
       res.json({ success: false, msg: err.message });
     }
 
-    try {
-      const verificationToken = user.getEmailVerificationToken();
-      await user.save({ validateBeforeSave: false });
+    // try {
+    //   const verificationToken = user.getEmailVerificationToken();
+    //   await user.save({ validateBeforeSave: false });
 
-      const verificationUrl = `${WEB_URL}/verify-email/${verificationToken}`;
-      const html = renderTemplate("emailVerification", {
-        logoUrl: "#",
-        verificationUrl,
-        expirationTime: "30 minutes",
-        currentYear: new Date().getFullYear(),
-        companyName: "Mosaic Tour Ethiopia",
-        privacyPolicyUrl: `${WEB_URL}/privacy`,
-        termsUrl: `${WEB_URL}/termsOfService`,
-        contactUrl: `${WEB_URL}/contact`,
-        facebookUrl: "#",
-        twitterUrl: "#",
-        instagramUrl: "#",
-        email,
-      });
+    //   const verificationUrl = `${WEB_URL}/verify-email/${verificationToken}`;
+    //   const html = renderTemplate("emailVerification", {
+    //     logoUrl: "#",
+    //     verificationUrl,
+    //     expirationTime: "30 minutes",
+    //     currentYear: new Date().getFullYear(),
+    //     companyName: "Mosaic Tour Ethiopia",
+    //     privacyPolicyUrl: `${WEB_URL}/privacy`,
+    //     termsUrl: `${WEB_URL}/termsOfService`,
+    //     contactUrl: `${WEB_URL}/contact`,
+    //     facebookUrl: "#",
+    //     twitterUrl: "#",
+    //     instagramUrl: "#",
+    //     email,
+    //   });
 
-      console.log(verificationUrl);
+    //   console.log(verificationUrl);
 
-      await sendEmail({
-        to: email,
-        subject: "User Mail Verification",
-        html,
-      });
-    } catch (error) {
-      // Non-interruptive handling.
-      console.log(
-        `Error sending verification email to ${email}.\n${error.message}`
-      );
-    }
+    //   // await sendEmail({
+    //   //   to: email,
+    //   //   subject: "User Mail Verification",
+    //   //   html,
+    //   // });
+    // } catch (error) {
+    //   // Non-interruptive handling.
+    //   console.log(
+    //     `Error sending verification email to ${email}.\n${error.message}`
+    //   );
+    // }
 
     const userData = user.getPublicProfile();
 
@@ -93,7 +93,7 @@ exports.register = async (req, res) => {
       success: true,
       user: userData,
       token: accessToken,
-      msg: "Verification email sent. Please check your inbox.",
+      msg: "Successfuly registered.",
     });
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
@@ -199,7 +199,7 @@ exports.getCurrentUser = async (req, res) => {
         msg: "User not found",
       });
     }
-    console.log(user.avatar);
+
     res.status(200).json({
       success: true,
       user: user.getPublicProfile(),
@@ -318,7 +318,6 @@ exports.resetPassword = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
-
     if (!token) {
       res.status(400).json({
         success: false,
@@ -376,7 +375,6 @@ exports.verifyEmail = async (req, res) => {
     res.status(200).json({
       success: true,
       msg: "Email verified successfully",
-      // user: userData,
     });
   } catch (err) {
     console.log(err.message);
@@ -400,7 +398,7 @@ exports.sendVerification = async (req, res) => {
     }
 
     if (user.verified) {
-      console.log("VERIFIED USER: ", user);
+      // console.log("VERIFIED USER: ", user);
       console.log("Already verified!");
       return res.status(200).json({
         success: true,
@@ -432,17 +430,15 @@ exports.sendVerification = async (req, res) => {
       // For testing
       console.log("Verification URL:", verificationUrl);
 
-      await sendEmail({
-        to: user.email,
-        subject: "User Mail Verification",
-        html,
-      });
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: "User Mail Verification",
+      //   html,
+      // });
     } catch (error) {
       console.error(`Email sending error to ${user.email}:`, error.message);
-      // Log to a monitoring system later
     }
 
-    // 5. Respond to client immediately
     return res.status(200).json({
       success: true,
       msg: "Verification email sent successfully",

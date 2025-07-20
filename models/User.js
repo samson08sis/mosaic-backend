@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema(
     },
     verified: {
       type: Boolean,
-      detault: false,
+      default: false,
     },
     verifiedAt: Date,
     password: {
