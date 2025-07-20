@@ -53,6 +53,8 @@ exports.register = async (req, res) => {
       res.json({ success: false, msg: err.message });
     }
 
+    await user.save({ validateBeforeSave: false });
+
     // try {
     //   const verificationToken = user.getEmailVerificationToken();
     //   await user.save({ validateBeforeSave: false });
@@ -388,8 +390,9 @@ exports.verifyEmail = async (req, res) => {
 exports.sendVerification = async (req, res) => {
   try {
     const userId = req.user;
+    console.log(userId);
     const user = await User.findById(userId);
-
+    console.log(user);
     if (!user) {
       return res.status(404).json({
         success: false,
