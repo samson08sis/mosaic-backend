@@ -26,7 +26,6 @@ const UserSchema = new mongoose.Schema(
     verifiedAt: Date,
     password: {
       type: String,
-      // this doesn't reffer to the object in arrow functions
       required: function () {
         return this.provider === "local"; // Only required for local auth
       },
@@ -115,6 +114,7 @@ UserSchema.methods.getResetPasswordToken = function () {
 
 UserSchema.methods.getPublicProfile = function () {
   return {
+    id: this._id,
     name: this.name,
     email: this.email,
     verified: this.verified,
