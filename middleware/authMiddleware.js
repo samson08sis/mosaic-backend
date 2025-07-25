@@ -17,8 +17,7 @@ exports.verifyToken = async (req, res, next) => {
   if (accessToken && refreshToken) {
     try {
       const decoded = verifyAccessToken(accessToken);
-      const user = decoded.userId;
-      req.user = user;
+      req.query.user = decoded.userId;
       return next();
     } catch (err) {
       if (err.name === "TokenExpiredError") {
@@ -56,7 +55,7 @@ exports.verifyToken = async (req, res, next) => {
         maxAge: 15 * 60 * 1000, // 15 mins
       });
 
-      req.user = decoded.userId;
+      req.query.user = decoded.userId;
       return next();
     } catch (err) {
       res.clearCookie("refreshToken");

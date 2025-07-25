@@ -193,7 +193,7 @@ exports.logout = async (req, res) => {
 // @access  Private
 exports.getCurrentUser = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.query.user;
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -250,11 +250,11 @@ exports.forgotPassword = async (req, res) => {
 
       console.log(resetUrl);
 
-      await sendEmail({
-        to: email,
-        subject: "Password Reset Request",
-        html,
-      });
+      // await sendEmail({
+      //   to: email,
+      //   subject: "Password Reset Request",
+      //   html,
+      // });
 
       res.json({ success: true, msg: "Password reset email sent." });
     } catch (error) {
@@ -389,7 +389,7 @@ exports.verifyEmail = async (req, res) => {
 // @access Private
 exports.sendVerification = async (req, res) => {
   try {
-    const userId = req.user;
+    const userId = req.query.user;
     console.log(userId);
     const user = await User.findById(userId);
     console.log(user);
@@ -433,11 +433,11 @@ exports.sendVerification = async (req, res) => {
       // For testing
       console.log("Verification URL:", verificationUrl);
 
-      await sendEmail({
-        to: user.email,
-        subject: "User Mail Verification",
-        html,
-      });
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: "User Mail Verification",
+      //   html,
+      // });
     } catch (error) {
       console.error(`Email sending error to ${user.email}:`, error.message);
     }
