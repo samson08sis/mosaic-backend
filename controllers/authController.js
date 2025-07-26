@@ -185,7 +185,7 @@ exports.logout = async (req, res) => {
     }
   }
 
-  res.status(200).json({ msg: "Login failed. Please try again." });
+  res.sendStatus(200);
 };
 
 // @desc    Get current user
@@ -193,7 +193,8 @@ exports.logout = async (req, res) => {
 // @access  Private
 exports.getCurrentUser = async (req, res) => {
   try {
-    const userId = req.query.user;
+    const userId = req.userId;
+    // console.log(userId);
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -389,7 +390,7 @@ exports.verifyEmail = async (req, res) => {
 // @access Private
 exports.sendVerification = async (req, res) => {
   try {
-    const userId = req.query.user;
+    const userId = req.userId;
     console.log(userId);
     const user = await User.findById(userId);
     console.log(user);

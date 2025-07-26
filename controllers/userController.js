@@ -22,7 +22,7 @@ exports.getUser = async (req, res) => {
 // @access    Private
 exports.createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
-  const createdBy = req.query.user;
+  const createdBy = req.userId;
   const newUser = await User.create({ name, email, password, role, createdBy });
   res.status(201).json(newUser);
 };

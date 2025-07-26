@@ -13,8 +13,8 @@ const logger = (req, res, next) => {
   const timestamp = new Date().toISOString();
   const start = Date.now();
 
-  const user = req.query.user?.userId || "Guest";
-  const role = req.query.user?.role || "none";
+  const user = req.userId || "Guest";
+  const role = req.userId?.role || "none";
 
   res.on("finish", () => {
     const log = `[${timestamp}] ${method} ${originalUrl} - User: ${user}, Role: ${role} Response status: ${res.statusCode}\n`;

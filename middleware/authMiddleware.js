@@ -1,3 +1,4 @@
+const { request } = require("express");
 const User = require("../models/User");
 const {
   verifyAccessToken,
@@ -17,7 +18,7 @@ exports.verifyToken = async (req, res, next) => {
   if (accessToken && refreshToken) {
     try {
       const decoded = verifyAccessToken(accessToken);
-      req.query.user = decoded.userId;
+      req.userId = decoded.userId;
       return next();
     } catch (err) {
       if (err.name === "TokenExpiredError") {
@@ -55,7 +56,7 @@ exports.verifyToken = async (req, res, next) => {
         maxAge: 15 * 60 * 1000, // 15 mins
       });
 
-      req.query.user = decoded.userId;
+      req.userId = decoded.userId;
       return next();
     } catch (err) {
       res.clearCookie("refreshToken");
