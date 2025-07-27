@@ -1,9 +1,8 @@
 const User = require("../models/User");
-const { unsetAuthCookies } = require("../utils/cookieActions");
+const { unsetAuthCookies, setAccessCookie } = require("../utils/cookieActions");
 const {
   verifyAccessToken,
   verifyRefreshToken,
-  generateAccessToken,
 } = require("../utils/tokenActions");
 
 exports.verifyToken = async (req, res, next) => {
@@ -46,15 +45,8 @@ exports.verifyToken = async (req, res, next) => {
       });
       if (!user) throw new Error("Refresh token revoked");
 
-      const newAccessToken = generateAccessToken(user);
-
       // Set new cookie
-      res.cookie("accessToken", newAccessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 15 * 60 * 1000, // 15 mins
-      });
+      setAccessCookie(res, user);
 
       req.userId = decoded.userId;
       return next();

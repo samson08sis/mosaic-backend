@@ -27,6 +27,15 @@ const setAuthCookies = (res, user) => {
   return refreshToken;
 };
 
+const setAccessCookie = (res, user) => {
+  const accessToken = generateAccessToken(user);
+
+  res.cookie("accessToken", accessToken, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000,
+  });
+};
+
 const unsetAuthCookies = (res) => {
   try {
     res.clearCookie("accessToken", { httpOnly: true, secure: true });
@@ -36,4 +45,4 @@ const unsetAuthCookies = (res) => {
   }
 };
 
-module.exports = { setAuthCookies, unsetAuthCookies };
+module.exports = { setAuthCookies, unsetAuthCookies, setAccessCookie };
