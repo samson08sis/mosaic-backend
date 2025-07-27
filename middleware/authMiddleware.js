@@ -1,5 +1,5 @@
-const { request } = require("express");
 const User = require("../models/User");
+const { unsetAuthCookies } = require("../utils/cookieActions");
 const {
   verifyAccessToken,
   verifyRefreshToken,
@@ -65,9 +65,7 @@ exports.verifyToken = async (req, res, next) => {
       });
     }
   }
-
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  unsetAuthCookies(res);
   res.status(401).json({
     message: "Authentication required",
   });
