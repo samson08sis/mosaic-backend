@@ -221,7 +221,7 @@ exports.verifyEmail = async (req, res) => {
     });
 
     if (!user) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         msg: "Invalid or expired verification token",
       });
