@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const sendEmail = require("../utils/sendEmail");
 const { hashToken } = require("../utils/cryptoActions");
 const { renderTemplate } = require("../utils/emailTemplates");
 const { verifyRefreshToken } = require("../utils/tokenActions");
@@ -136,13 +137,13 @@ exports.forgotPassword = async (req, res) => {
         email,
       });
 
-      console.log(resetUrl);
+      // console.log(resetUrl);
 
-      // await sendEmail({
-      //   to: email,
-      //   subject: "Password Reset Request",
-      //   html,
-      // });
+      await sendEmail({
+        to: email,
+        subject: "Password Reset Request",
+        html,
+      });
 
       res.json({ success: true, msg: "Password reset email sent." });
     } catch (error) {
@@ -286,13 +287,13 @@ exports.sendVerification = async (req, res) => {
       });
 
       // For testing
-      console.log("Verification URL:", verificationUrl);
+      // console.log("Verification URL:", verificationUrl);
 
-      // await sendEmail({
-      //   to: user.email,
-      //   subject: "User Mail Verification",
-      //   html,
-      // });
+      await sendEmail({
+        to: user.email,
+        subject: "User Mail Verification",
+        html,
+      });
     } catch (error) {
       console.error(`Error sending email to ${user.email}: ${error.message}`);
     }
