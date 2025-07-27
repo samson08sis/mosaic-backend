@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
 const mongoose = require("mongoose");
-const { CRYPTO_TOKEN_LENGTH } = process.env;
+const { getToken, hashToken } = require("../utils/cryptoActions");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -88,26 +87,16 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// Method to compare passwords
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Generate, save and return a password reset token
 UserSchema.methods.getResetPasswordToken = function () {
-  // Generate token
-  const resetToken = crypto
-    .randomBytes(CRYPTO_TOKEN_LENGTH * 1)
-    .toString("hex");
+  const resetToken = getToken();
 
-  // Hash token and set to resetPasswordToken field
-  this.resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
+  this.resetPasswordToken = hashToken(resetToken);
 
-  // Set expire (30 minutes)
-  this.resetPasswordExpires = Date.now() + 30 * 60 * 1000;
+  this.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
 
   return resetToken;
 };
@@ -126,35 +115,18 @@ UserSchema.methods.getPublicProfile = function () {
 };
 
 UserSchema.methods.getEmailVerificationToken = function () {
-  // Generate token
-  const verificationToken = crypto
-    .randomBytes(CRYPTO_TOKEN_LENGTH * 1)
-    .toString("hex");
+  const verificationToken = getToken();
 
-  // Hash token and set to emailVerificationToken field
-  this.emailVerificationToken = crypto
-    .createHash("sha256")
-    .update(verificationToken)
-    .digest("hex");
+  this.emailVerificationToken = hashToken(verificationToken);
 
-  // Set expire (30 minutes)
-  this.emailVerificationExpires = Date.now() + 30 * 60 * 1000;
+  this.emailVerificationExpires = Date.now() + 60 * 60 * 1000; // 1 hour
 
   return verificationToken;
 };
 
-UserSchema.methods.verifyEmailToken = function (token) {
-  // 1. Hash the incoming token
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-  // 2. Compare with stored hash and check expiration
-  return (
-    this.emailVerificationToken === hashedToken &&
-    this.emailVerificationExpires > Date.now()
-  );
-};
-
-UserSchema.methods.clearVerificationToken = function () {
+UserSchema.methods.verifyUser = function () {
+  this.verified = true;
+  this.verifiedAt = new Date();
   this.emailVerificationToken = undefined;
   this.emailVerificationExpires = undefined;
 };
