@@ -2,8 +2,6 @@ const jwt = require("jsonwebtoken");
 const {
   JWT_SECRET,
   JWT_EXPIRES_IN,
-  NODE_ENV,
-  JWT_COOKIE_EXPIRES_IN,
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRY,
@@ -41,23 +39,11 @@ const verifyToken = (token) => {
   return jwt.verify(token, JWT_SECRET);
 };
 
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  expires: new Date(Date.now() + JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
-};
-
-const attachTokenToCookie = (res, token, cookieOptions = COOKIE_OPTIONS) => {
-  res.cookie("token", token, cookieOptions);
-};
-
 module.exports = {
   verifyToken,
   generateToken,
   generateAccessToken,
   generateRefreshToken,
-  attachTokenToCookie,
   verifyAccessToken,
   verifyRefreshToken,
 };
