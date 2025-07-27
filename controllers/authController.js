@@ -1,16 +1,14 @@
 const User = require("../models/User");
-const sendEmail = require("../utils/sendEmail");
+const { hashToken } = require("../utils/cryptoActions");
 const { renderTemplate } = require("../utils/emailTemplates");
-const {
-  generateRefreshToken,
-  generateAccessToken,
-  verifyRefreshToken,
-} = require("../utils/tokenActions");
+const { verifyRefreshToken } = require("../utils/tokenActions");
 const crypto = require("crypto");
+const { unsetAuthCookies } = require("../utils/cookieActions");
+const { logUserIn } = require("../utils/auth");
 
-const { WEB_URL, NODE_ENV } = process.env;
+const { WEB_URL } = process.env;
 
-// @desc    Register user
+// @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
@@ -27,82 +25,13 @@ exports.register = async (req, res) => {
       password,
     });
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    user.refreshToken = refreshToken;
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    };
-
-    try {
-      res.cookie("accessToken", accessToken, {
-        ...cookieOptions,
-        maxAge: 15 * 60 * 1000,
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-    } catch (err) {
-      console.log(`PROBLEM SETTING COOKIES: ${err.message}`);
-      res.json({ success: false, msg: err.message });
-    }
-
-    await user.save({ validateBeforeSave: false });
-
-    // try {
-    //   const verificationToken = user.getEmailVerificationToken();
-    //   await user.save({ validateBeforeSave: false });
-
-    //   const verificationUrl = `${WEB_URL}/verify-email/${verificationToken}`;
-    //   const html = renderTemplate("emailVerification", {
-    //     logoUrl: "#",
-    //     verificationUrl,
-    //     expirationTime: "30 minutes",
-    //     currentYear: new Date().getFullYear(),
-    //     companyName: "Mosaic Tour Ethiopia",
-    //     privacyPolicyUrl: `${WEB_URL}/privacy`,
-    //     termsUrl: `${WEB_URL}/termsOfService`,
-    //     contactUrl: `${WEB_URL}/contact`,
-    //     facebookUrl: "#",
-    //     twitterUrl: "#",
-    //     instagramUrl: "#",
-    //     email,
-    //   });
-
-    //   console.log(verificationUrl);
-
-    //   // await sendEmail({
-    //   //   to: email,
-    //   //   subject: "User Mail Verification",
-    //   //   html,
-    //   // });
-    // } catch (error) {
-    //   // Non-interruptive handling.
-    //   console.log(
-    //     `Error sending verification email to ${email}.\n${error.message}`
-    //   );
-    // }
-
-    const userData = user.getPublicProfile();
-
-    res.status(201).json({
-      success: true,
-      user: userData,
-      token: accessToken,
-      msg: "Successfuly registered.",
-    });
+    logUserIn(res, user, 201);
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
 
-// @desc    Login user
+// @desc    Log user in
 // @route   GET /api/auth/login
 // @access  Public
 exports.login = async (req, res) => {
@@ -113,70 +42,33 @@ exports.login = async (req, res) => {
     if (!user)
       return res
         .status(400)
-        .json({ success: false, msg: "Invalid credentials" });
+        .json({ success: false, msg: "Invalid email or password" });
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res
         .status(400)
-        .json({ success: false, msg: "Invalid credentials" });
+        .json({ success: false, msg: "Invalid email or password" });
     }
 
-    const refreshToken =
-      user?.refreshToken && verifyRefreshToken(user.refreshToken)
-        ? user.refreshToken
-        : generateRefreshToken(user);
-    const accessToken = generateAccessToken(user);
-
-    user.refreshToken = refreshToken;
-
-    await user.save({ validateBeforeSave: false });
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    };
-
-    try {
-      res.cookie("accessToken", accessToken, {
-        ...cookieOptions,
-        maxAge: 15 * 60 * 1000,
-      });
-
-      res.cookie("refreshToken", refreshToken, {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-    } catch (err) {
-      console.log(`Problem setting cookies: ${err.message}`);
-      res.status(500).json({ success: false, msg: err.message });
-    }
-
-    const userData = user.getPublicProfile();
-
-    res.status(200).json({
-      success: true,
-      user: userData,
-    });
+    logUserIn(res, user, 200);
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
   }
 };
 
-// @desc    Get current user
+// @desc    Log user out
 // @route   GET /api/auth/logout
-// @access  Private
+// @access  Public
 exports.logout = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
-  res.clearCookie("accessToken", { httpOnly: true, secure: true });
-  res.clearCookie("refreshToken", { httpOnly: true, secure: true });
+  unsetAuthCookies(res);
 
-  if (refreshToken !== null) {
+  if (refreshToken != null) {
     try {
       const decoded = verifyRefreshToken(refreshToken);
-      const user = await User.findByIdAndUpdate(decoded.userId, {
+      await User.findByIdAndUpdate(decoded.userId, {
         $unset: { refreshToken },
       });
     } catch (err) {
@@ -194,7 +86,6 @@ exports.logout = async (req, res) => {
 exports.getCurrentUser = async (req, res) => {
   try {
     const userId = req.userId;
-    // console.log(userId);
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -208,7 +99,7 @@ exports.getCurrentUser = async (req, res) => {
       user: user.getPublicProfile(),
     });
   } catch (error) {
-    console.error("Error in getting current user:", error);
+    console.error("Error getting current user:", error);
     res.status(500).json({
       success: false,
       msg: "Internal server error",
@@ -218,26 +109,22 @@ exports.getCurrentUser = async (req, res) => {
 
 // @desc    Request for a password reset link
 // @route   GET /api/auth/forgot-password
-// @access  Private
+// @access  Public
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ msg: "User not found." });
     }
 
-    // Generate a reset token
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
     try {
-      // Send email with reset link
       const resetUrl = `${WEB_URL}/reset-password/${resetToken}`;
 
-      // Prepare email-tempate for password reset
       const html = renderTemplate("passwordReset", {
         logoUrl: "#",
         resetUrl,
@@ -266,7 +153,7 @@ exports.forgotPassword = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Error in forgotPassword:", err);
+    console.log("Error in forgotPassword:", err.message);
     return res
       .status(500)
       .json({ success: false, msg: "Internal server error." });
@@ -317,7 +204,7 @@ exports.resetPassword = async (req, res) => {
 
 // @desc Verify email
 // @route POST /api/auth/verify-email
-// @access Private
+// @access Public
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
@@ -328,12 +215,8 @@ exports.verifyEmail = async (req, res) => {
       });
     }
 
-    // Find user with matching verification token
     const user = await User.findOne({
-      emailVerificationToken: crypto
-        .createHash("sha256")
-        .update(token)
-        .digest("hex"),
+      emailVerificationToken: hashToken(token),
       emailVerificationExpires: { $gt: Date.now() },
     });
 
@@ -344,36 +227,11 @@ exports.verifyEmail = async (req, res) => {
       });
     }
 
-    // Mark user as verified and clear token
-    user.verified = true;
-    user.verifiedAt = new Date();
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
+    user.verifyUser();
     await user.save({ validateBeforeSave: false });
 
-    // Optionally log the user in automatically after verification
-    // const accessToken = generateAccessToken(user);
-    // const refreshToken = generateRefreshToken(user);
-
-    // user.refreshToken = refreshToken;
-    // await user.save();
-
-    // // Set HTTP-only cookies
-    // res.cookie("accessToken", accessToken, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    //   maxAge: 15 * 60 * 1000, // 15 minutes
-    // });
-
-    // res.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    // });
-
-    // const userData = user.getPublicProfile();
+    // // Optionally log the user in after verification
+    // logUserIn(res, user, 200);
 
     res.status(200).json({
       success: true,
@@ -391,9 +249,7 @@ exports.verifyEmail = async (req, res) => {
 exports.sendVerification = async (req, res) => {
   try {
     const userId = req.userId;
-    console.log(userId);
     const user = await User.findById(userId);
-    console.log(user);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -402,8 +258,6 @@ exports.sendVerification = async (req, res) => {
     }
 
     if (user.verified) {
-      // console.log("VERIFIED USER: ", user);
-      console.log("Already verified!");
       return res.status(200).json({
         success: true,
         msg: "Email is already verified",
@@ -419,7 +273,7 @@ exports.sendVerification = async (req, res) => {
       const html = renderTemplate("emailVerification", {
         logoUrl: "#",
         verificationUrl,
-        expirationTime: "30 minutes",
+        expirationTime: "1 hour",
         currentYear: new Date().getFullYear(),
         companyName: "Mosaic Tour Ethiopia",
         privacyPolicyUrl: `${process.env.WEB_URL}/privacy`,
@@ -440,7 +294,7 @@ exports.sendVerification = async (req, res) => {
       //   html,
       // });
     } catch (error) {
-      console.error(`Email sending error to ${user.email}:`, error.message);
+      console.error(`Error sending email to ${user.email}: ${error.message}`);
     }
 
     return res.status(200).json({
