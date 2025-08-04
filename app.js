@@ -5,12 +5,15 @@ const cors = require("cors");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const configurePassport = require("./config/passport");
 
 // Load env variables
 dotenv.config();
 
 // Connect to DB
 connectDB();
+
+configurePassport();
 
 // ✅ Initialize app BEFORE using it
 const app = express();

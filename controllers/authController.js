@@ -3,8 +3,7 @@ const sendEmail = require("../utils/sendEmail");
 const { hashToken } = require("../utils/cryptoActions");
 const { renderTemplate } = require("../utils/emailTemplates");
 const { verifyRefreshToken } = require("../utils/tokenActions");
-const crypto = require("crypto");
-const { unsetAuthCookies } = require("../utils/cookieActions");
+const { unsetAuthCookies, setAuthCookies } = require("../utils/cookieActions");
 const { logUserIn } = require("../utils/auth");
 
 const { WEB_URL } = process.env;
@@ -53,6 +52,25 @@ exports.login = async (req, res) => {
     }
 
     logUserIn(res, user, 200);
+  } catch (error) {
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};
+
+// @desc    Register / Log user in
+// @route   GET /api/auth/login
+// @access  Private
+exports.authGoogleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Authentication failed" });
+    }
+
+    logUserIn(res, user, "html");
   } catch (error) {
     res.status(500).json({ success: false, msg: error.message });
   }
@@ -166,12 +184,10 @@ exports.forgotPassword = async (req, res) => {
 // @access  Private
 exports.resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const token = req.query.prt;
+    const { newPassword } = req.body;
 
-    const resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const resetPasswordToken = hashToken(token);
 
     const user = await User.findOne({
       resetPasswordToken,
@@ -191,7 +207,6 @@ exports.resetPassword = async (req, res) => {
         .json({ success: false, msg: "Passwords must be different." });
     }
 
-    // 3. Update password and clear token
     user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
