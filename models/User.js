@@ -20,7 +20,9 @@ const UserSchema = new mongoose.Schema(
     },
     verified: {
       type: Boolean,
-      default: false,
+      default: function () {
+        return this.provider !== "local";
+      },
     },
     verifiedAt: Date,
     password: {
@@ -46,6 +48,8 @@ const UserSchema = new mongoose.Schema(
         return this.provider === "google";
       },
       select: false,
+      unique: true,
+      sparse: true,
     },
     role: {
       type: String,
