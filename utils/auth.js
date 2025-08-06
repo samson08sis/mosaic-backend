@@ -10,6 +10,12 @@ const logUserIn = async (res, user, statusCode) => {
     await user.save({ validateBeforeSave: false });
     const userData = user.getPublicProfile();
     res.setHeader("Cross-Origin-Opener-Policy", "restrict-properties");
+    const callbackUrl = new URL(
+      "/api/auth/google/callback",
+      process.env.WEB_URL
+    );
+    callbackUrl.searchParams.set("accessToken", accessToken);
+    callbackUrl.searchParams.set("refreshToken", refreshToken);
     typeof statusCode === "number"
       ? res.status(statusCode).json({
           success: true,
@@ -19,7 +25,7 @@ const logUserIn = async (res, user, statusCode) => {
         <html>
           <body>
             <script>
-              window.location.href = "${process.env.WEB_URN}/api/auth/google/callback?accessToken=${accessToken}&refreshToken=${refreshToken}";
+              window.location.href = "${callbackUrl.toString()}";
             </script>
           </body>
         </html>
