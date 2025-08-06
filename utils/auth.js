@@ -23,7 +23,7 @@ const logUserIn = async (res, user, statusCode) => {
                 user: ${JSON.stringify(userData)},
                 accessToken: "${accessToken}",
                 refreshToken: "${refreshToken}"
-              }, window.location.origin);
+              }, "https://mosaic-tour-app.vercel.app");
               window.close();
             </script>
           </body>
