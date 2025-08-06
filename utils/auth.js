@@ -19,16 +19,25 @@ const logUserIn = async (res, user, statusCode) => {
         <html>
           <body>
             <script>
-              window.opener.postMessage({
-                success: true,
-                accessToken: "${accessToken}",
-                refreshToken: "${refreshToken}"
-              }, "https://mosaic-tour-app.vercel.app");
-              window.close();
+              window.location.href = "${process.env.WEB_URN}/api/auth/google/callback?accessToken=${accessToken}&refreshToken=${refreshToken}";
             </script>
           </body>
         </html>
       `);
+    // res.send(`
+    //   <html>
+    //     <body>
+    //       <script>
+    //         window.opener.postMessage({
+    //           success: true,
+    //           accessToken: "${accessToken}",
+    //           refreshToken: "${refreshToken}"
+    //         }, "https://mosaic-tour-app.vercel.app");
+    //         window.close();
+    //       </script>
+    //     </body>
+    //   </html>
+    // `);
   } catch (err) {
     res.status(500).json({ success: false, msg: err.message });
   }
