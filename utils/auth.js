@@ -1,9 +1,11 @@
 const { setAuthCookies } = require("./cookieActions");
+const { generateAccessToken } = require("./tokenActions");
 
 const logUserIn = async (res, user, statusCode) => {
   try {
     const refreshToken = setAuthCookies(res, user);
     user.refreshToken = refreshToken;
+    const accessToken = generateAccessToken(user);
 
     await user.save({ validateBeforeSave: false });
     const userData = user.getPublicProfile();
@@ -18,7 +20,9 @@ const logUserIn = async (res, user, statusCode) => {
             <script>
               window.opener.postMessage({
                 success: true,
-                user: ${JSON.stringify(userData)}
+                user: ${JSON.stringify(userData)},
+                accessToken: "${accessToken}",
+                refreshToken: "${refreshToken}"
               }, window.location.origin);
               window.close();
             </script>
@@ -26,7 +30,7 @@ const logUserIn = async (res, user, statusCode) => {
         </html>
       `);
   } catch (err) {
-    res.status(500).json({ success: false, msg: error.message });
+    res.status(500).json({ success: false, msg: err.message });
   }
 };
 
