@@ -9,7 +9,7 @@ const logUserIn = async (res, user, statusCode) => {
 
     await user.save({ validateBeforeSave: false });
     const userData = user.getPublicProfile();
-    res.setHeader("Cross-Origin-Opener-Policy", "restrict-properties");
+
     const callbackUrl = new URL(
       "/api/auth/google/callback",
       process.env.WEB_URL
