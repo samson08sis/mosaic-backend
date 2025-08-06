@@ -9,6 +9,7 @@ const logUserIn = async (res, user, statusCode) => {
 
     await user.save({ validateBeforeSave: false });
     const userData = user.getPublicProfile();
+    res.setHeader("Cross-Origin-Opener-Policy", "restrict-properties");
     typeof statusCode === "number"
       ? res.status(statusCode).json({
           success: true,
@@ -20,7 +21,6 @@ const logUserIn = async (res, user, statusCode) => {
             <script>
               window.opener.postMessage({
                 success: true,
-                user: ${JSON.stringify(userData)},
                 accessToken: "${accessToken}",
                 refreshToken: "${refreshToken}"
               }, "https://mosaic-tour-app.vercel.app");
