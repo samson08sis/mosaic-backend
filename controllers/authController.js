@@ -3,7 +3,7 @@ const sendEmail = require("../utils/sendEmail");
 const { hashToken } = require("../utils/cryptoActions");
 const { renderTemplate } = require("../utils/emailTemplates");
 const { verifyRefreshToken } = require("../utils/tokenActions");
-const { unsetAuthCookies, setAuthCookies } = require("../utils/cookieActions");
+const { unsetAuthCookies } = require("../utils/cookieActions");
 const { logUserIn } = require("../utils/auth");
 
 const { WEB_URL } = process.env;
