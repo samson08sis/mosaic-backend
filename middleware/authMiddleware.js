@@ -3,6 +3,7 @@ const { unsetAuthCookies, setAccessCookie } = require("../utils/cookieActions");
 const {
   verifyAccessToken,
   verifyRefreshToken,
+  generateAccessToken,
 } = require("../utils/tokenActions");
 
 exports.verifyToken = async (req, res, next) => {
@@ -21,11 +22,15 @@ exports.verifyToken = async (req, res, next) => {
       return next();
     } catch (err) {
       if (err.name === "TokenExpiredError") {
-        // Refresh the token
-        // For now, just return Unauthorized.
-        return res.status(401).json({
-          message: "Token expired",
-        });
+        try {
+          const decodedRefreshToken = verifyRefreshToken(refreshToken);
+          req.userId = decodedRefreshToken.userId;
+          // Refresh the token
+          await refreshAccessToken(res, refreshToken);
+          return next();
+        } catch (err) {
+          console.log("ERROR REFRESHING TOKEN");
+        }
       } else {
         res.clearCookie("accessToken");
         return res.status(401).json({
@@ -61,4 +66,17 @@ exports.verifyToken = async (req, res, next) => {
   res.status(401).json({
     message: "Authentication required",
   });
+};
+
+const refreshAccessToken = async (res, refreshToken) => {
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    const user = await User.findOne({
+      _id: decoded.userId,
+      refreshToken,
+    });
+    setAccessCookie(res, user);
+  } catch (err) {
+    console.log("ERROR REFRESHING ACCESS TOKEN");
+  }
 };
