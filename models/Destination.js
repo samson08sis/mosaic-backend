@@ -25,10 +25,15 @@ const DestinationSchema = new mongoose.Schema(
     reviews: {
       type: Number,
     },
-    activities: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Activity",
-    },
+    // activities: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Activity",
+    // },
+    activities: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );
