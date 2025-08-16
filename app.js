@@ -49,7 +49,7 @@ app.get("/favicon.ico", (req, res) => {
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/users", require("./routes/userRoutes")); // <-- Only add this after app is defined
+app.use("/api/data", require("./routes/dataRoutes"));
 
 app.use("/dev", require("./routes/development"));
 

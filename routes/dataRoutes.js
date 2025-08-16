@@ -1,0 +1,12 @@
+const express = require("express");
+const {
+  getHeroImages,
+  createHeroImage,
+  deleteAllHeroImages,
+} = require("../controllers/dataController");
+const router = express.Router();
+
+router.get("/hero-images", getHeroImages);
+router.post("/hero-images/new", createHeroImage);
+
+module.exports = router;
