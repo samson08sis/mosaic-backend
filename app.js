@@ -49,8 +49,13 @@ app.get("/favicon.ico", (req, res) => {
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/destinations", require("./routes/destinationRoutes"));
 app.use("/api/data", require("./routes/dataRoutes"));
 
 app.use("/dev", require("./routes/development"));
+// app.use("/api/users", require("./routes/userRoutes"));
+// app.use("/api/packages", require("./routes/packageRoutes"));
+// app.use("/api/bookings", require("./routes/bookingRoutes"));
+// app.use("/api/activities", require("./routes/activityRoutes"));
 
 module.exports = app;
