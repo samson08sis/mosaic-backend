@@ -1,4 +1,4 @@
-const Destination = require("../models/Destination");
+const Destination = require("../../models/Destination");
 
 const mockDestinations = [
   {
@@ -55,10 +55,14 @@ exports.getPopularDestinations = async (req, res) => {
     // { isPopular: true } // add later to => find()
     const popularDestinations = await Destination.find()
       .sort({ rating: -1 })
-      .limit(4)
-      .select("-description");
-    // .populate("activities"); // Not yet a document.
-    res.status(200).json(popularDestinations);
+      .limit(4);
+    // .populate("activities"); // Activities is not yet a document.
+
+    const minimalData = popularDestinations.map((dest) =>
+      dest.getMinimalData()
+    );
+
+    res.status(200).json(minimalData);
   } catch (err) {
     console.log("Error fetching destinations:", err.message);
     res.status(500).json({ error: "Internal server error" });

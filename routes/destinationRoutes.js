@@ -4,7 +4,7 @@ const {
   deleteAllDestinations,
   getAllDestinations,
   getPopularDestinations,
-} = require("../controllers/destinationController");
+} = require("../controllers/data/destinationController");
 const router = express.Router();
 
 router.get("/", getAllDestinations);

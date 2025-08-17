@@ -3,7 +3,7 @@ const {
   getHeroImages,
   createHeroImage,
   deleteAllHeroImages,
-} = require("../controllers/dataController");
+} = require("../controllers/data/dataController");
 const router = express.Router();
 
 router.get("/hero-images", getHeroImages);
