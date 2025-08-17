@@ -2,40 +2,41 @@ const Destination = require("../models/Destination");
 
 const mockDestinations = [
   {
-    name: "Lalibela",
-    image: "https://example.com/images/lalibela.jpg",
+    name: "Lalibela, Ethiopia",
+    image: "/lalibela-bete-giorgis.jpg",
+
     description:
-      "Famous for its 12th-century rock-hewn churches and religious heritage.",
-    rating: 4.8,
-    reviews: 242,
-    activities: ["Trekking", "Swimming", "Cusine"],
+      "Home to 11 medieval monolithic rock-hewn churches, Lalibela is Ethiopia's Jerusalem and a place of pilgrimage for Orthodox Christians.",
+    rating: 4.9,
+    reviews: 245,
+    activities: ["Cultural", "Historical", "Religious"],
   },
   {
-    name: "Simien Mountains National Park",
-    image: "https://example.com/images/simien.jpg",
+    name: "Simien Mountains, Ethiopia",
+    image: "/bg-2.jpg",
     description:
-      "A UNESCO World Heritage Site with breathtaking views and endemic wildlife.",
-    rating: 4.7,
-    reviews: 198,
-    activities: ["Trekking", "Swimming", "Cusine"],
+      "A UNESCO World Heritage site with dramatic mountain scenery, deep valleys, and rare wildlife including the Gelada baboon and Walia ibex.",
+    rating: 4.8,
+    reviews: 187,
+    activities: ["Trekking", "Wildlife", "Nature"],
   },
   {
     name: "Lake Tana & Blue Nile Falls",
-    image: "https://example.com/images/laketana.jpg",
+    image: "/nile-2.jpg",
     description:
       "Ethiopia’s largest lake with boat tours and the stunning Blue Nile Falls nearby.",
     rating: 4.6,
     reviews: 175,
-    activities: ["Trekking", "Swimming", "Cusine"],
+    activities: ["Trekking", "Swimming", "Adventure"],
   },
   {
-    name: "Addis Ababa",
-    image: "https://example.com/images/addisababa.jpg",
+    name: "Addis Ababa, Ethiopia",
+    image: "/bg-69.jpg",
     description:
-      "The vibrant capital city featuring museums, food tours, and cultural sites.",
-    rating: 4.5,
-    reviews: 311,
-    activities: ["Trekking", "Swimming", "Cusine"],
+      "Ethiopia's vibrant capital and diplomatic hub with museums, markets, and restaurants showcasing the country's rich history and diverse cuisine.",
+    rating: 4.4,
+    reviews: 210,
+    activities: ["Urban", "Cultural", "Culinary"],
   },
 ];
 
