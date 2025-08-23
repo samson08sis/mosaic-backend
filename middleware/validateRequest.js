@@ -59,9 +59,9 @@ const validateToken = (
   return body(field)
     .trim()
     .notEmpty()
-    .withMessage("No session provided")
+    .withMessage("No token provided")
     .isString()
-    .withMessage("Invalid session")
+    .withMessage("Invalid token")
     .isLength({
       min: minLength,
       max: maxLength,
@@ -100,9 +100,12 @@ const validateResetPassword = [
   validationMiddleware,
 ];
 
+const validateResetToken = [validateToken(), validationMiddleware];
+
 module.exports = {
   validateLogin,
   validateRegister,
   validateForgotPassword,
   validateResetPassword,
+  validateResetToken,
 };

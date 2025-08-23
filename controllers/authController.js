@@ -155,13 +155,13 @@ exports.forgotPassword = async (req, res) => {
         email,
       });
 
-      // console.log(resetUrl);
+      console.log(resetUrl);
 
-      await sendEmail({
-        to: email,
-        subject: "Password Reset Request",
-        html,
-      });
+      // await sendEmail({
+      //   to: email,
+      //   subject: "Password Reset Request",
+      //   html,
+      // });
 
       res.json({ success: true, msg: "Password reset email sent." });
     } catch (error) {
@@ -173,6 +173,30 @@ exports.forgotPassword = async (req, res) => {
     }
   } catch (err) {
     console.log("Error in forgotPassword:", err.message);
+    return res
+      .status(500)
+      .json({ success: false, msg: "Internal server error." });
+  }
+};
+
+exports.verifyResetToken = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const hash = hashToken(token);
+    const user = await User.findOne({
+      resetPasswordToken: hash,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid or expired token" });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (err) {
     return res
       .status(500)
       .json({ success: false, msg: "Internal server error." });
@@ -302,13 +326,13 @@ exports.sendVerification = async (req, res) => {
       });
 
       // For testing
-      // console.log("Verification URL:", verificationUrl);
+      console.log("Verification URL:", verificationUrl);
 
-      await sendEmail({
-        to: user.email,
-        subject: "User Mail Verification",
-        html,
-      });
+      // await sendEmail({
+      //   to: user.email,
+      //   subject: "User Mail Verification",
+      //   html,
+      // });
     } catch (error) {
       console.error(`Error sending email to ${user.email}: ${error.message}`);
     }

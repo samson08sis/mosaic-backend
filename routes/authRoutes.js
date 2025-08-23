@@ -10,6 +10,7 @@ const {
   verifyEmail,
   sendVerification,
   authGoogleCallback,
+  verifyResetToken,
 } = require("../controllers/authController");
 const { checkRoleAndVerify } = require("../middleware/adminRoleMiddleware");
 const logger = require("../middleware/logger");
@@ -19,6 +20,7 @@ const {
   validateResetPassword,
   validateLogin,
   validateRegister,
+  validateResetToken,
 } = require("../middleware/validateRequest");
 const passport = require("passport");
 
@@ -28,6 +30,7 @@ router.get("/logout", logout);
 router.get("/me", verifyToken, getCurrentUser);
 router.post("/forgot-password", validateForgotPassword, forgotPassword);
 router.post("/reset-password", validateResetPassword, resetPassword);
+router.post("/verify-reset-token", validateResetToken, verifyResetToken);
 router.post("/verify-email", verifyEmail);
 router.post("/send-email-verification", verifyToken, sendVerification);
 // Google Auth
