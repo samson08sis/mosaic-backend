@@ -38,4 +38,15 @@ const DestinationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+DestinationSchema.methods.getMinimalData = function () {
+  return {
+    id: this._id,
+    name: this.name,
+    image: this.image,
+    rating: this.rating,
+    reviews: this.reviews,
+    activities: this.activities,
+  };
+};
+
 module.exports = mongoose.model("Destination", DestinationSchema);
