@@ -77,11 +77,6 @@ const ActivitySchema = new Schema(
     },
     inclusions: [String],
     exclusions: [String],
-    meetingPoint: String,
-    cancellationPolicy: {
-      type: String,
-      required: [true, "A cancellation policy is required."],
-    },
     tags: [String],
 
     // Review Statistics
