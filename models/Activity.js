@@ -77,6 +77,7 @@ const ActivitySchema = new Schema(
     },
     inclusions: [String],
     exclusions: [String],
+    requirements: [String],
     tags: [String],
 
     // Review Statistics
