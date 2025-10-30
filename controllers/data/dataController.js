@@ -1,5 +1,10 @@
 const HeroImages = require("../../models/HeroImages");
 
+/**
+ * @desc Get active slides
+ * @route GET /api/hero-images
+ * @access Public
+ */
 exports.getClientSlides = async (req, res) => {
   try {
     const slides = await HeroImages.find(
@@ -12,6 +17,11 @@ exports.getClientSlides = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get all slides
+ * @route GET /api/admin/hero-images
+ * @access Restricted (Admin)
+ */
 exports.getHeroImages = async (req, res) => {
   try {
     const data = await HeroImages.find({});
@@ -21,6 +31,11 @@ exports.getHeroImages = async (req, res) => {
   }
 };
 
+/**
+ * @desc Create slide(s)
+ * @route POST /api/admin/hero-images
+ * @access Restricted (Admin)
+ */
 exports.createHeroImage = async (req, res) => {
   try {
     const payload = req.body;
@@ -52,6 +67,11 @@ exports.createHeroImages = async (req, res) => {
   }
 };
 
+/**
+ * @desc Update a slide
+ * @route PUT /api/admin/hero-images/:id
+ * @access Restricted (Admin)
+ */
 exports.updateHeroImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,6 +91,29 @@ exports.updateHeroImage = async (req, res) => {
     res.status(200).json({ success: true, data: updatedSlide });
   } catch (err) {
     console.log(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/**
+ * @desc Reorder slides
+ * @route PUT /api/admin/hero-images/reorder
+ * @access Restricted (Admin)
+ */
+exports.reorderHeroImages = async (req, res) => {
+  try {
+    const { orderedIds } = req.body;
+
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { order: index },
+      },
+    }));
+
+    await HeroImages.bulkWrite(bulkOps);
+    res.status(200).json({ success: true });
+  } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
