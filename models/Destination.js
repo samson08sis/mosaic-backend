@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { default: slugify } = require("slugify");
 
 const DestinationSchema = new mongoose.Schema(
   {
@@ -44,32 +43,37 @@ const DestinationSchema = new mongoose.Schema(
     },
     city: {
       type: String,
+      required: [true, "Nearest city is required."],
       trim: true,
     },
-    region: String,
-    mapEmbed: String,
-
-    // Geospatial Data for location-based searching
-    coordinates: {
-      type: {
-        type: String,
-        default: "Point",
-        enum: ["Point"], // GeoJSON type
-      },
-      geo: {
-        type: [Number],
-        required: [true, "Coordinates (longitude, latitude) are required."],
-      },
+    region: {
+      type: String,
+      required: [true, "Region is required."],
     },
+    mapEmbed: String,
 
     // Categorization and Filtering
     category: {
       type: String,
       required: [true, "A category is required for filtering."],
-      enum: ["Historical", "Nature", "Culture", "Religious", "City"], // Example Ethiopian categories
+      enum: ["Historical", "Nature", "Culture", "Religious", "City"],
       index: true,
     },
     tags: [String],
+
+    // Utility
+    bestTimeToVisit: {
+      type: String,
+    },
+    highlights: {
+      type: [String],
+      default: [],
+    },
+    thingsToDo: {
+      type: [String],
+      default: [],
+    },
+    // popularActivities: [String],
 
     // Review Statistics
     ratings: {
@@ -84,6 +88,11 @@ const DestinationSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    // Additional Info
+    culturalSignificance: String,
+    historicalImportance: String,
+    naturalFeatures: String,
   },
   { timestamps: true }
 );
@@ -93,13 +102,6 @@ DestinationSchema.virtual("activities", {
   ref: "Activity",
   localField: "_id",
   foreignField: "destinationId",
-});
-
-DestinationSchema.pre("save", async function (next) {
-  if (!this.slug) {
-    this.slug = slugify(this.name, { lower: true, strict: true, trim: true });
-  }
-  next();
 });
 
 DestinationSchema.methods.getMinimalData = function () {
