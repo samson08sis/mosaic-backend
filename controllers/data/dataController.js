@@ -24,7 +24,7 @@ exports.getClientSlides = async (req, res) => {
  */
 exports.getHeroImages = async (req, res) => {
   try {
-    const data = await HeroImages.find({});
+    const data = await HeroImages.find({}).sort({ order: -1 });
     res.status(200).json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
