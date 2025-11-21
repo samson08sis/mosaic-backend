@@ -138,21 +138,36 @@ exports.getDestinationBySlug = async (req, res) => {
  */
 exports.getDestinationById = async (req, res) => {
   try {
-    console.log("%%%%%%%>>> ", req.params);
-    const { _id } = req.params;
+    const { id } = req.params;
 
-    const destination = await Destination.findOne({ _id }).populate(
-      "activities"
-    );
+    const destination = await Destination.findById(id).populate("activities");
 
     if (!destination) {
-      return res.status(404).json({ message: `No destination found` });
+      return res.status(404).json({
+        status: "error",
+        message: "No destination found with the provided ID",
+      });
     }
 
-    res.status(200).json(destination);
+    res.status(200).json({
+      status: "success",
+      data: { destination },
+    });
   } catch (err) {
-    console.log("Error fetching destination:", err.message);
-    res.status(500).json({ status: "error", message: err.message });
+    console.error("Error fetching destination:", err.message);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid destination ID",
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch destination",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 };
 
