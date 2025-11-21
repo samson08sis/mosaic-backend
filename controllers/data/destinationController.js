@@ -304,6 +304,50 @@ exports.createDestinations = async (req, res) => {
   }
 };
 
+/**
+ * @desc Delete a Destination by ID
+ * @route DELETE /api/admin/destinations/:id
+ * @access Restricted (Admin)
+ */
+exports.deleteDestination = async (req, res) => {
+  try {
+    const { secret } = req.body;
+    const { id } = req.params;
+
+    if (!secret || secret !== process.env.DELETE_REQUEST_SECRET)
+      return res.sendStatus(400);
+
+    const destination = await Destination.findByIdAndDelete(id);
+
+    if (!destination) {
+      return res.status(404).json({
+        status: "error",
+        message: "No destination found with the provided ID",
+      });
+    }
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  } catch (err) {
+    console.error("Error deleting destination:", err.message);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid destination ID",
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete destination",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
 exports.deleteAllDestinations = async (req, res) => {
   try {
     const deleteResponse = await Destination.deleteMany();
