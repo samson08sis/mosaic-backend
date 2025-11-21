@@ -222,6 +222,76 @@ exports.createDestination = async (req, res) => {
   }
 };
 
+/**
+ * @desc Update a Destination by ID
+ * @route PUT /api/destinations/:id
+ * @access Restricted (Admin)
+ */
+exports.updateDestination = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    // Generate slug from name if name is updated
+    if (req.body.name && req.body.country && !req.body.slug) {
+      req.body.slug = req.body.name
+        .concat(" ")
+        .concat(req.body.country)
+        .toLowerCase()
+        .replace(/[^a-z0-9 -]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }
+
+    const destination = await Destination.findByIdAndUpdate(id, req.body, {
+      new: true, // Return updated document
+      runValidators: true,
+    });
+
+    if (!destination) {
+      return res.status(404).json({
+        status: "error",
+        message: "No destination found with the provided ID",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: { destination },
+    });
+  } catch (err) {
+    console.error("Error updating destination:", err.message);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid destination ID",
+      });
+    }
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        status: "error",
+        message: "Destination with this slug already exists",
+      });
+    }
+
+    if (err.name === "ValidationError") {
+      const errors = Object.values(err.errors).map((el) => el.message);
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid input data",
+        errors,
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update destination",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
 // TESTING CONTROLLERS
 
 exports.createDestinations = async (req, res) => {
