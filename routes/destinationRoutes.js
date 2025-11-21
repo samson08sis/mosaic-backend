@@ -10,7 +10,7 @@ router.get("/id/:id", destinationController.getDestinationById);
 router.post("/create", destinationController.createDestination);
 router.put("/:id", destinationController.updateDestination);
 // TEST ROUTES
-router.delete("/dev/delete", destinationController.deleteDestination);
+router.delete("/dev/delete/:id", destinationController.deleteDestination);
 router.delete("/dev/delete-all", destinationController.deleteAllDestinations);
 
 module.exports = router;
