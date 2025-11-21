@@ -1,73 +1,212 @@
 const Destination = require("../../models/Destination");
 
-const mockDestinations = [
-  {
-    name: "Lalibela, Ethiopia",
-    image: "/lalibela-bete-giorgis.jpg",
+// Middleware/Helper (Simulates Admin protection)
+const protect = (req, res, next) => {
+  // In a real app: check if user is logged in and has 'admin' role.
+  req.user = { id: "admin-user-id" }; // Mock user
+  next();
+};
 
-    description:
-      "Home to 11 medieval monolithic rock-hewn churches, Lalibela is Ethiopia's Jerusalem and a place of pilgrimage for Orthodox Christians.",
-    rating: 4.9,
-    reviews: 245,
-    activities: ["Cultural", "Historical", "Religious"],
-  },
-  {
-    name: "Simien Mountains, Ethiopia",
-    image: "/bg-2.jpg",
-    description:
-      "A UNESCO World Heritage site with dramatic mountain scenery, deep valleys, and rare wildlife including the Gelada baboon and Walia ibex.",
-    rating: 4.8,
-    reviews: 187,
-    activities: ["Trekking", "Wildlife", "Nature"],
-  },
-  {
-    name: "Lake Tana & Blue Nile Falls",
-    image: "/nile-2.jpg",
-    description:
-      "Ethiopia’s largest lake with boat tours and the stunning Blue Nile Falls nearby.",
-    rating: 4.6,
-    reviews: 175,
-    activities: ["Trekking", "Swimming", "Adventure"],
-  },
-  {
-    name: "Addis Ababa, Ethiopia",
-    image: "/bg-69.jpg",
-    description:
-      "Ethiopia's vibrant capital and diplomatic hub with museums, markets, and restaurants showcasing the country's rich history and diverse cuisine.",
-    rating: 4.4,
-    reviews: 210,
-    activities: ["Urban", "Cultural", "Culinary"],
-  },
-];
+// // All or popular destinations
+// exports.getAllDestinations = async (req, res) => {
+//   try {
+//     const { popular } = req.query;
 
+//     let destinations;
+//     if (popular === "true") {
+//       destinations = await Destination.find()
+//         .sort({ rating: -1, createdAt: -1 })
+//         .limit(4)
+//         .populate("activities")
+//         .lean();
+//     } else {
+//       destinations = await Destination.find().populate("activities");
+//     }
+
+//     res.status(200).json(destinations);
+//   } catch (err) {
+//     console.log("Error fetching destinations:", err.message);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
+/**
+ * @desc Get all Destinations, optionally filtered/paginated
+ * @route GET /api/destinations
+ * @access Public
+ */
 exports.getAllDestinations = async (req, res) => {
   try {
-    const allDestinations = await Destination.find().populate("activities");
-    res.status(200).json(allDestinations);
+    // Build query
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "sort", "limit", "fields"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+    console.log("Excluded Fields: ", excludedFields);
+
+    // Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    let query = Destination.find(JSON.parse(queryStr)).populate("activities");
+
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    // Field limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(",").join(" ");
+      query = query.select(fields);
+    } else {
+      query = query.select("-__v");
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    // Execute query
+    const destinations = await query;
+    const total = await Destination.countDocuments(JSON.parse(queryStr));
+
+    res.status(200).json({
+      status: "success",
+      results: destinations.length,
+      data: { destinations },
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
-    console.log("Error fetching destinations:", err.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.log("Error fetching destination:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch destinations",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 };
 
-exports.getPopularDestinations = async (req, res) => {
+/**
+ * @desc Get a single Destination by its unique slug
+ * @route GET /api/destinations/:slug
+ * @access Public
+ */
+exports.getDestinationBySlug = async (req, res) => {
   try {
-    // { isPopular: true } // add later to => find()
-    const popularDestinations = await Destination.find()
-      .sort({ rating: -1 })
-      .limit(4);
-    // .populate("activities"); // Activities is not yet a document.
+    const { slug } = req.params;
 
-    const minimalData = popularDestinations.map((dest) =>
-      dest.getMinimalData()
+    const destination = await Destination.findOne({ slug }).populate(
+      "activities"
     );
 
-    res.status(200).json(minimalData);
+    if (!destination) {
+      return res
+        .status(404)
+        .json({ message: `No destination found with slug: ${slug}` });
+    }
+
+    res.status(200).json(destination);
   } catch (err) {
-    console.log("Error fetching destinations:", err.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.log("Error fetching destination:", err.message);
+    res.status(500).json({ status: "error", message: err.message });
   }
 };
+
+/**
+ * @desc Get a single Destination by id
+ * @route GET /api/admin/destinations/:id
+ * @access Restricted (Admin)
+ */
+exports.getDestinationById = async (req, res) => {
+  try {
+    console.log("%%%%%%%>>> ", req.params);
+    const { _id } = req.params;
+
+    const destination = await Destination.findOne({ _id }).populate(
+      "activities"
+    );
+
+    if (!destination) {
+      return res.status(404).json({ message: `No destination found` });
+    }
+
+    res.status(200).json(destination);
+  } catch (err) {
+    console.log("Error fetching destination:", err.message);
+    res.status(500).json({ status: "error", message: err.message });
+  }
+};
+
+/**
+ * @desc Create a new Destination
+ * @route POST /api/v1/destinations
+ * @access Restricted (Admin)
+ */
+// exports.createDestination = [
+//   async (req, res) => {
+//     try {
+//       const destination = req.body;
+//       console.log("New Destination: ", destination);
+
+//       // Multer + Cloudinary puts uploaded files in req.files
+//       const mainImage = req.files?.image?.[0];
+//       const galleryImages = req.files?.gallery || [];
+
+//       if (!mainImage) {
+//         return res.status(400).json({
+//           status: "fail",
+//           message: "Main image is required",
+//         });
+//       }
+
+//       const newDestination = await Destination.create({
+//         ...destination,
+//         image: {
+//           url: mainImage.path,
+//           public_id: mainImage.filename,
+//         },
+//         gallery: galleryImages.map((file) => ({
+//           url: file.path,
+//           public_id: file.filename,
+//         })),
+//       });
+
+//       res.status(201).json({
+//         status: "success",
+//         data: { destination: newDestination },
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(400).json({
+//         status: "fail",
+//         message: "Data validation failed or duplication error.",
+//       });
+//     }
+//   },
+// ];
+
+exports.createDestination = async (req, res) => {
+  try {
+    const newDestination = await Destination.create(req.body);
+    res.sendStatus(201);
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).json({ status: "fail", message: err.message });
+  }
+};
+
+// TESTING CONTROLLERS
 
 exports.createDestinations = async (req, res) => {
   try {
