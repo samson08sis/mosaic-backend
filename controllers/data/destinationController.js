@@ -173,59 +173,52 @@ exports.getDestinationById = async (req, res) => {
 
 /**
  * @desc Create a new Destination
- * @route POST /api/v1/destinations
+ * @route POST /api/destinations/create
  * @access Restricted (Admin)
  */
-// exports.createDestination = [
-//   async (req, res) => {
-//     try {
-//       const destination = req.body;
-//       console.log("New Destination: ", destination);
-
-//       // Multer + Cloudinary puts uploaded files in req.files
-//       const mainImage = req.files?.image?.[0];
-//       const galleryImages = req.files?.gallery || [];
-
-//       if (!mainImage) {
-//         return res.status(400).json({
-//           status: "fail",
-//           message: "Main image is required",
-//         });
-//       }
-
-//       const newDestination = await Destination.create({
-//         ...destination,
-//         image: {
-//           url: mainImage.path,
-//           public_id: mainImage.filename,
-//         },
-//         gallery: galleryImages.map((file) => ({
-//           url: file.path,
-//           public_id: file.filename,
-//         })),
-//       });
-
-//       res.status(201).json({
-//         status: "success",
-//         data: { destination: newDestination },
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(400).json({
-//         status: "fail",
-//         message: "Data validation failed or duplication error.",
-//       });
-//     }
-//   },
-// ];
-
 exports.createDestination = async (req, res) => {
   try {
-    const newDestination = await Destination.create(req.body);
-    res.sendStatus(201);
+    // Autogenerate slug if not found
+    if (!req.body.slug && req.body.name && req.body.country) {
+      req.body.slug = req.body.name
+        .concat(" ")
+        .concat(req.body.country)
+        .toLowerCase()
+        .replace(/[^a-z0-9 -]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }
+
+    const destination = await Destination.create(req.body);
+
+    res.status(201).json({
+      status: "success",
+      data: { destination },
+    });
   } catch (err) {
-    console.log(err.message);
-    res.status(400).json({ status: "fail", message: err.message });
+    console.error("Error creating destination:", err.message);
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        status: "error",
+        message: "Destination with this slug already exists",
+      });
+    }
+
+    if (err.name === "ValidationError") {
+      const errors = Object.values(err.errors).map((el) => el.message);
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid input data",
+        errors,
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Failed to create destination",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 };
 
