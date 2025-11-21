@@ -111,15 +111,23 @@ exports.getDestinationBySlug = async (req, res) => {
     );
 
     if (!destination) {
-      return res
-        .status(404)
-        .json({ message: `No destination found with slug: ${slug}` });
+      return res.status(404).json({
+        status: "error",
+        message: `No destination found with slug: ${slug}`,
+      });
     }
 
-    res.status(200).json(destination);
+    res.status(200).json({
+      status: "success",
+      data: { destination },
+    });
   } catch (err) {
-    console.log("Error fetching destination:", err.message);
-    res.status(500).json({ status: "error", message: err.message });
+    console.error("Error fetching destination:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch destination",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 };
 
