@@ -99,7 +99,7 @@ exports.getAllDestinations = async (req, res) => {
 
 /**
  * @desc Get a single Destination by its unique slug
- * @route GET /api/destinations/:slug
+ * @route GET /api/destinations/slug/:slug
  * @access Public
  */
 exports.getDestinationBySlug = async (req, res) => {
@@ -133,7 +133,7 @@ exports.getDestinationBySlug = async (req, res) => {
 
 /**
  * @desc Get a single Destination by id
- * @route GET /api/admin/destinations/:id
+ * @route GET /api/destinations/id/:id
  * @access Restricted (Admin)
  */
 exports.getDestinationById = async (req, res) => {
