@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 
+const ImageSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  alt: { type: String, default: "Destination Image" },
+  public_id: { type: String, required: true },
+});
+
 const DestinationSchema = new mongoose.Schema(
   {
     // Core Identification and Routing
@@ -24,16 +30,17 @@ const DestinationSchema = new mongoose.Schema(
       maxlength: [250, "The summary cannot exceed 250 characters."],
     },
     description: {
-      type: String,
+      type: [String],
       required: [true, "A destination must have a full description."],
     },
 
     // Media
     image: {
-      type: String,
+      // type: ImageSchema,
+      type: String, // For now. We'll later save to cloudinary and save the url and public id.
       required: [true, "A main image URL is required."],
     },
-    gallery: [String],
+    gallery: { type: [String], required: true },
 
     // Location Data
     country: {
@@ -51,6 +58,7 @@ const DestinationSchema = new mongoose.Schema(
       required: [true, "Region is required."],
     },
     mapEmbed: String,
+    coordinates: { type: { latitude: String, longitude: String } },
 
     // Categorization and Filtering
     category: {
@@ -65,6 +73,7 @@ const DestinationSchema = new mongoose.Schema(
     bestTimeToVisit: {
       type: String,
     },
+    bestTimeReason: String,
     highlights: {
       type: [String],
       default: [],
