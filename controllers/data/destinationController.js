@@ -294,16 +294,6 @@ exports.updateDestination = async (req, res) => {
 
 // TESTING CONTROLLERS
 
-exports.createDestinations = async (req, res) => {
-  try {
-    await Destination.insertMany(mockDestinations);
-    res.sendStatus(201);
-  } catch (err) {
-    console.log("Error creating destinations:", err.message);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
 /**
  * @desc Delete a Destination by ID
  * @route DELETE /api/admin/destinations/:id
