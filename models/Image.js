@@ -14,4 +14,4 @@ const CloudinaryImageSchema = new mongoose.Schema({
   format: String,
 });
 
-module.exports = mongoose.model("Image", CloudinaryImageSchema);
+module.exports = CloudinaryImageSchema;

@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
-
-const ImageSchema = new mongoose.Schema({
-  url: { type: String, required: true },
-  alt: { type: String, default: "Destination Image" },
-  public_id: { type: String, required: true },
-});
+const CloudinaryImageSchema = require("./Image");
 
 const DestinationSchema = new mongoose.Schema(
   {
@@ -36,11 +31,11 @@ const DestinationSchema = new mongoose.Schema(
 
     // Media
     image: {
-      // type: ImageSchema,
-      type: String, // For now. We'll later save to cloudinary and save the url and public id.
+      // type: ImageSchema
+      type: CloudinaryImageSchema,
       required: [true, "A main image URL is required."],
     },
-    gallery: { type: [String], required: true },
+    gallery: { type: [CloudinaryImageSchema], required: true },
 
     // Location Data
     country: {
