@@ -8,6 +8,8 @@ router.get("/", destinationController.getAllDestinations);
 router.get("/slug/:slug", destinationController.getDestinationBySlug);
 router.get("/id/:id", destinationController.getDestinationById);
 router.post("/create", destinationController.createDestination);
+router.post("/:id/draft", destinationController.saveAsDraft);
+router.post("/:id/publish", destinationController.publishDestination);
 router.put("/:id", destinationController.updateDestination);
 // TEST ROUTES
 router.delete("/dev/delete/:id", destinationController.deleteDestination);

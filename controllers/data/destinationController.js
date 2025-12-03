@@ -139,6 +139,7 @@ exports.getDestinationBySlug = async (req, res) => {
 exports.getDestinationById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("ID: >>> ", id);
 
     const destination = await Destination.findById(id).populate("activities");
 
@@ -178,22 +179,95 @@ exports.getDestinationById = async (req, res) => {
  */
 exports.createDestination = async (req, res) => {
   try {
-    // Autogenerate slug if not found
-    if (!req.body.slug && req.body.name && req.body.country) {
-      req.body.slug = req.body.name
-        .concat(" ")
-        .concat(req.body.country)
+    const { name, country, status = "draft", ...rest } = req.body;
+
+    // Validate required fields for publishing
+    if (status === "published") {
+      const requiredFields = [
+        "name",
+        "summary",
+        "description",
+        "image",
+        "country",
+        "city",
+        "region",
+        "category",
+        "highlights",
+        "thingsToDo",
+      ];
+      const missingFields = requiredFields.filter(
+        (field) =>
+          !req.body[field] ||
+          (Array.isArray(req.body[field]) && req.body[field].length === 0)
+      );
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          status: "error",
+          message: `Cannot publish destination. Missing required fields: ${missingFields.join(
+            ", "
+          )}`,
+        });
+      }
+    }
+
+    // Autogenerate slug
+    let slug;
+    if (!req.body.slug && name && country) {
+      slug = `${name
         .toLowerCase()
         .replace(/[^a-z0-9 -]/g, "")
         .replace(/\s+/g, "-")
-        .replace(/-+/g, "-");
+        .replace(/-+/g, "-")}-${country.toLowerCase()}`;
+    } else {
+      slug = req.body.slug;
     }
 
-    const destination = await Destination.create(req.body);
+    // Check for duplicate slug
+    const existing = await Destination.findOne({ slug });
+    if (existing) {
+      return res.status(400).json({
+        status: "error",
+        message: "Destination with this slug already exists",
+        suggestion: `${slug}-${Date.now().toString().slice(-4)}`,
+      });
+    }
+
+    // Prepare coordinates
+    let coordinates;
+    if (req.body.coordinates && typeof req.body.coordinates === "string") {
+      const [lat, lon] = req.body.coordinates
+        .split(",")
+        .map((coord) => parseFloat(coord.trim()));
+      if (!isNaN(lat) && !isNaN(lon)) {
+        coordinates = { latitude: lat, longitude: lon };
+      }
+    } else if (
+      req.body.coordinates &&
+      req.body.coordinates.latitude &&
+      req.body.coordinates.longitude
+    ) {
+      coordinates = req.body.coordinates;
+    }
+
+    // Create destination
+    const destination = await Destination.create({
+      ...rest,
+      name,
+      slug,
+      coordinates,
+      status,
+      lastSavedAt: new Date(),
+      ...(status === "published" && { publishedAt: new Date() }),
+    });
 
     res.status(201).json({
       status: "success",
       data: { destination },
+      message:
+        status === "draft"
+          ? "Destination saved as draft successfully"
+          : "Destination published successfully",
     });
   } catch (err) {
     console.error("Error creating destination:", err.message);
@@ -202,14 +276,18 @@ exports.createDestination = async (req, res) => {
       return res.status(400).json({
         status: "error",
         message: "Destination with this slug already exists",
+        error: err.message,
       });
     }
 
     if (err.name === "ValidationError") {
-      const errors = Object.values(err.errors).map((el) => el.message);
+      const errors = Object.values(err.errors).map((el) => ({
+        field: el.path,
+        message: el.message,
+      }));
       return res.status(400).json({
         status: "error",
-        message: "Invalid input data",
+        message: "Validation failed",
         errors,
       });
     }
@@ -218,6 +296,108 @@ exports.createDestination = async (req, res) => {
       status: "error",
       message: "Failed to create destination",
       error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+/**
+ * @desc Save destination as draft
+ * @route PUT /api/destinations/:id/draft
+ * @access Restricted (Admin)
+ */
+exports.saveAsDraft = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = {
+      ...req.body,
+      status: "draft",
+      lastSavedAt: new Date(),
+    };
+
+    const destination = await Destination.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!destination) {
+      return res.status(404).json({
+        status: "error",
+        message: "Destination not found",
+      });
+    }
+
+    res.json({
+      status: "success",
+      data: { destination },
+      message: "Draft saved successfully",
+    });
+  } catch (err) {
+    console.error("Error saving draft:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to save draft",
+    });
+  }
+};
+
+/**
+ * @desc Publish a draft destination
+ * @route PUT /api/destinations/:id/publish
+ * @access Restricted (Admin)
+ */
+exports.publishDestination = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if destination has all required fields
+    const destination = await Destination.findById(id);
+    if (!destination) {
+      return res.status(404).json({
+        status: "error",
+        message: "Destination not found",
+      });
+    }
+
+    const requiredFields = [
+      "name",
+      "summary",
+      "description",
+      "image",
+      "country",
+      "city",
+      "region",
+      "category",
+      "highlights",
+      "thingsToDo",
+    ];
+    const missingFields = requiredFields.filter((field) => {
+      const value = destination[field];
+      return !value || (Array.isArray(value) && value.length === 0);
+    });
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: `Cannot publish destination. Missing required fields: ${missingFields.join(
+          ", "
+        )}`,
+      });
+    }
+
+    destination.status = "published";
+    destination.publishedAt = new Date();
+    await destination.save();
+
+    res.json({
+      status: "success",
+      data: { destination },
+      message: "Destination published successfully",
+    });
+  } catch (err) {
+    console.error("Error publishing destination:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to publish destination",
     });
   }
 };
