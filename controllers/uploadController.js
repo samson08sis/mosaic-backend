@@ -22,6 +22,8 @@ exports.uploadImage = async (req, res) => {
       });
     }
 
+    const folder = req.body.folder || "uploads";
+
     // Validate file type
     const allowedTypes = [
       "image/jpeg",
@@ -50,7 +52,7 @@ exports.uploadImage = async (req, res) => {
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: "destinations",
+          folder: folder,
           resource_type: "image",
           transformation: [
             { width: 1200, height: 800, crop: "limit" }, // Optimized for display
@@ -66,6 +68,8 @@ exports.uploadImage = async (req, res) => {
 
       streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
     });
+
+    console.log(uploadResult.public_id);
 
     res.json({
       status: "success",
