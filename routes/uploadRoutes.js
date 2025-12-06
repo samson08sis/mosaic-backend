@@ -11,15 +11,10 @@ const upload = multer({
   },
 });
 
-// Apply auth middleware to all destination routes
 // router.use(protect);
 // router.use(restrictTo("admin", "editor"));
 
-// Upload routes
-router.post("/upload", upload.single("image"), uploadController.uploadImage);
-router.delete("/upload/:publicId", uploadController.deleteImage);
-
-router.post("/", controllers.uploadImage);
+router.post("/", upload.single("image"), controllers.uploadImage);
 router.delete("/:publicId", controllers.deleteImage);
 
 module.exports = router;
