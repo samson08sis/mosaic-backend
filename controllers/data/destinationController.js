@@ -263,7 +263,7 @@ exports.createDestination = async (req, res) => {
 
     res.status(201).json({
       status: "success",
-      data: { destination },
+      destination,
       message:
         status === "draft"
           ? "Destination saved as draft successfully"
