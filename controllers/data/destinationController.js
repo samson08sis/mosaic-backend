@@ -70,7 +70,7 @@ exports.getAllDestinations = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
-    query = query.skip(skip).limit(limit);
+    // query = query.skip(skip).limit(limit);
 
     // Execute query
     const destinations = await query;
