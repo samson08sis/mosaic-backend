@@ -17,6 +17,14 @@ const DestinationSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Status
+    status: {
+      type: String,
+      enum: ["published", "draft", "archived"],
+      default: "published",
+    },
+    featured: { type: Boolean, default: false },
+
     // Content and Descriptions
     summary: {
       type: String,
