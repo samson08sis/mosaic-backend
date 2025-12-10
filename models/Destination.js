@@ -17,14 +17,6 @@ const DestinationSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Status
-    status: {
-      type: String,
-      enum: ["published", "draft", "archived"],
-      default: "published",
-    },
-    featured: { type: Boolean, default: false },
-
     // Content and Descriptions
     summary: {
       type: String,
@@ -39,11 +31,10 @@ const DestinationSchema = new mongoose.Schema(
 
     // Media
     image: {
-      // type: ImageSchema
       type: CloudinaryImageSchema,
-      required: [true, "A main image URL is required."],
+      required: [true, "A cover image is required."],
     },
-    gallery: { type: [CloudinaryImageSchema], required: true },
+    gallery: [CloudinaryImageSchema],
 
     // Location Data
     country: {
@@ -100,6 +91,14 @@ const DestinationSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    // Utility
+    status: {
+      type: String,
+      enum: ["published", "draft", "archived"],
+      default: "published",
+    },
+    featured: { type: Boolean, default: false },
 
     // Additional Info
     culturalSignificance: String,
