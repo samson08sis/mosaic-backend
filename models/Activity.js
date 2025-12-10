@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const CloudinaryImageSchema = require("./Image");
 const { Schema } = mongoose;
 
 const ActivitySchema = new Schema(
@@ -17,8 +18,9 @@ const ActivitySchema = new Schema(
       trim: true,
     },
 
-    // Relationship to Parent Destination (Crucial Reference)
+    // Parent Destination
     destinationId: {
+      //
       type: mongoose.Schema.ObjectId,
       ref: "Destination",
       required: [true, "An activity must belong to a destination."],
@@ -46,20 +48,27 @@ const ActivitySchema = new Schema(
     currency: {
       type: String,
       required: [true, "Currency is required."],
-      default: "ETB", // Ethiopian Birr is the local currency
-      enum: ["USD", "ETB", "EUR"],
+      default: "USD",
     },
     duration: {
       type: String,
       required: [true, "The duration of the activity is required."],
     },
 
+    // Capacity
+    maxParticipants: {
+      type: Number,
+    },
+    minimumAge: {
+      type: String,
+    },
+
     // Media
     image: {
-      type: String,
-      required: [true, "A cover image URL is required."],
+      type: CloudinaryImageSchema,
+      required: [true, "A cover image is required."],
     },
-    gallery: [String],
+    gallery: [CloudinaryImageSchema],
 
     // Categorization and Logistics
     category: {
@@ -95,11 +104,12 @@ const ActivitySchema = new Schema(
     },
 
     // Utility
-    isPublished: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: ["published", "draft", "archived"],
+      default: "published",
     },
-    isFeatured: {
+    featured: {
       type: Boolean,
       default: false,
     },
