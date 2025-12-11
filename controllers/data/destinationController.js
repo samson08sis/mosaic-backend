@@ -141,7 +141,10 @@ exports.getDestinationById = async (req, res) => {
     const { id } = req.params;
     console.log("ID: >>> ", id);
 
-    const destination = await Destination.findById(id).populate("activities");
+    const destination = await Destination.findById(id).populate({
+      path: "activities",
+      select: "name slug category image",
+    });
 
     if (!destination) {
       return res.status(404).json({

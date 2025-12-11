@@ -115,6 +115,10 @@ DestinationSchema.virtual("activities", {
   foreignField: "destinationId",
 });
 
+// enable virtuals in JSON and object outputs
+DestinationSchema.set("toObject", { virtuals: true });
+DestinationSchema.set("toJSON", { virtuals: true });
+
 DestinationSchema.methods.getMinimalData = function () {
   return {
     id: this._id,
