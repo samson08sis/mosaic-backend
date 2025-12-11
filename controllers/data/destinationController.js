@@ -54,7 +54,7 @@ exports.getAllDestinations = async (req, res) => {
       const sortBy = req.query.sort.split(",").join(" ");
       query = query.sort(sortBy);
     } else {
-      query = query.sort("-createdAt");
+      query = query.sort("-featured -ratings -createdAt");
     }
 
     // Field limiting
