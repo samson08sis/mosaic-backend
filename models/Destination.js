@@ -92,12 +92,16 @@ const DestinationSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // Utility
-    status: {
-      type: String,
-      enum: ["published", "draft", "archived"],
-      default: "published",
+    // Status Utility
+    published: {
+      type: Boolean,
+      default: true,
     },
+    archived: {
+      type: Boolean,
+      default: false,
+    },
+
     featured: { type: Boolean, default: false },
 
     // Additional Info
