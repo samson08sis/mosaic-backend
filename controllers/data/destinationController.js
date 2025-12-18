@@ -139,7 +139,6 @@ exports.getDestinationBySlug = async (req, res) => {
 exports.getDestinationById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("ID: >>> ", id);
 
     const destination = await Destination.findById(id).populate({
       path: "activities",
@@ -185,7 +184,7 @@ exports.createDestination = async (req, res) => {
     const { name, country, status = "draft", ...rest } = req.body;
 
     // Validate required fields for publishing
-    if (status === "published") {
+    if (published === true) {
       const requiredFields = [
         "name",
         "summary",
@@ -261,7 +260,7 @@ exports.createDestination = async (req, res) => {
       coordinates,
       status,
       lastSavedAt: new Date(),
-      ...(status === "published" && { publishedAt: new Date() }),
+      ...(published && { publishedAt: new Date() }),
     });
 
     res.status(201).json({
