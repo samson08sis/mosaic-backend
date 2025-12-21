@@ -181,7 +181,7 @@ exports.getDestinationById = async (req, res) => {
  */
 exports.createDestination = async (req, res) => {
   try {
-    const { name, country, status = "draft", ...rest } = req.body;
+    const { name, country, draft = true, ...rest } = req.body;
 
     // Validate required fields for publishing
     if (published === true) {
@@ -260,14 +260,14 @@ exports.createDestination = async (req, res) => {
       coordinates,
       status,
       lastSavedAt: new Date(),
-      ...(published && { publishedAt: new Date() }),
+      // ...(published && { publishedAt: new Date() }), // --Cool destructuring props
     });
 
     res.status(201).json({
       status: "success",
       destination,
       message:
-        status === "draft"
+        published === false
           ? "Destination saved as draft successfully"
           : "Destination published successfully",
     });
@@ -312,7 +312,7 @@ exports.saveAsDraft = async (req, res) => {
     const { id } = req.params;
     const updateData = {
       ...req.body,
-      status: "draft",
+      published: false,
       lastSavedAt: new Date(),
     };
 
@@ -386,8 +386,7 @@ exports.publishDestination = async (req, res) => {
       });
     }
 
-    destination.status = "published";
-    destination.publishedAt = new Date();
+    destination.published = true;
     await destination.save();
 
     res.json({
