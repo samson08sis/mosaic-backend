@@ -7,7 +7,74 @@ const protect = (req, res, next) => {
 };
 
 /**
- * @desc Create a new Activity for a specific Destination
+ * @desc Get all Activities, optionally filtered/paginated
+ * @route GET /api/activities
+ * @access Public
+ */
+exports.getAllActivities = async (req, res) => {
+  try {
+    // Build query
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "sort", "limit", "fields"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+    console.log("Excluded Fields: ", excludedFields);
+
+    // Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    let query = Activity.find(JSON.parse(queryStr));
+
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-featured -ratings -createdAt");
+    }
+
+    // Field limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(",").join(" ");
+      query = query.select(fields);
+    } else {
+      query = query.select("-__v");
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    // query = query.skip(skip).limit(limit);
+
+    // Execute query
+    const activities = await query;
+    const total = await Activity.countDocuments(JSON.parse(queryStr));
+
+    res.status(200).json({
+      status: "success",
+      results: activities.length,
+      data: { activities },
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.log("Error fetching activity:", err.message);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch activities",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+/**
+ * @desc Create a new Activity
  * @route POST /api/activities/create
  * @access Restricted (Admin)
  */
