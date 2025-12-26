@@ -109,3 +109,43 @@ exports.createActivity = [
     }
   },
 ];
+
+/**
+ * @desc Get a single Activity by id
+ * @route GET /api/activities/id/:id
+ * @access Restricted (Admin)
+ */
+exports.getActivityById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const activity = await Activity.findById(id);
+
+    if (!activity) {
+      return res.status(404).json({
+        status: "error",
+        message: "No activity found with the provided ID",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: { activity },
+    });
+  } catch (err) {
+    console.error("Error fetching activity:", err.message);
+
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid activity ID",
+      });
+    }
+
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch activity",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
