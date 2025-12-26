@@ -8,20 +8,20 @@ const protect = (req, res, next) => {
 
 /**
  * @desc Create a new Activity for a specific Destination
- * @route POST /api/destinations/:destinationId/activities
+ * @route POST /api/activities/create
  * @access Restricted (Admin)
  */
 exports.createActivity = [
   protect,
   async (req, res) => {
     try {
-      const { name, destinationId, status, ...rest } = req.body;
+      const { name, status, ...rest } = req.body;
 
       // Validate required fields for publishing
       if (status === "published") {
         const requiredFields = [
           "name",
-          "summary",
+          // "summary",
           "description",
           "image",
           "category",
