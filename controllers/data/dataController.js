@@ -9,8 +9,8 @@ exports.getClientSlides = async (req, res) => {
   try {
     const slides = await HeroImages.find(
       { isActive: true },
-      { _id: 0, isActive: 0, __v: 0 }
-    ).sort({ order: -1 });
+      { _id: 0, isActive: 0, __v: 0, order: 0, pinned: 0 }
+    ).sort({ pinned: -1 });
     res.status(200).json({ success: true, data: slides });
   } catch (err) {
     console.log("Error fetching hero slides: ", err.message);
@@ -24,7 +24,7 @@ exports.getClientSlides = async (req, res) => {
  */
 exports.getHeroImages = async (req, res) => {
   try {
-    const data = await HeroImages.find({}).sort({ order: -1 });
+    const data = await HeroImages.find({}).sort({ pinned: -1 });
     res.status(200).json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
