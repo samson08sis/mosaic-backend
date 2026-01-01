@@ -17,7 +17,10 @@ exports.register = async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists)
-      return res.status(400).json({ msg: "Email already registered" });
+      return res.status(400).json({
+        msg: "Looks like you already have an account with this email. Please sign in or choose a different account.",
+      });
+    // Looks like you already have an account with this email. Please sign in or choose a different email.
 
     const user = new User({
       name,
@@ -289,7 +292,9 @@ exports.verifyEmail = async (req, res) => {
 exports.sendVerification = async (req, res) => {
   try {
     const userId = req.userId;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select(
+      "+emailVerificationToken +emailVerificationExpires"
+    );
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -302,6 +307,16 @@ exports.sendVerification = async (req, res) => {
         success: true,
         msg: "Email is already verified",
       });
+    }
+
+    if (user.emailVerificationToken && user.emailVerificationExpires) {
+      const isExpired = user.emailVerificationExpires < Date.now();
+      if (!isExpired) {
+        return res.status(400).json({
+          success: false,
+          msg: "A verification email was already sent. Please check your inbox.",
+        });
+      }
     }
 
     const verificationToken = user.getEmailVerificationToken();
