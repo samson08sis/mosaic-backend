@@ -9,7 +9,7 @@ exports.getClientSlides = async (req, res) => {
   try {
     const slides = await HeroImages.find(
       { isActive: true },
-      { _id: 0, isActive: 0, __v: 0, order: 0, pinned: 0 }
+      { isActive: 0, __v: 0 }
     ).sort({ pinned: -1 });
     res.status(200).json({ success: true, data: slides });
   } catch (err) {
