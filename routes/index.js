@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.use("/auth", require("./authRoutes"));
 router.use("/destinations", require("./destinationRoutes"));
-router.use("/data", require("./dataRoutes"));
+router.use("/hero-images", require("./dataRoutes"));
 router.use("/upload", require("./uploadRoutes"));
 
 router.use("/dev", require("./development"));

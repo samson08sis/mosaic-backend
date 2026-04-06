@@ -12,15 +12,15 @@ const { verifyToken } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 // Client Routes
-router.get("/hero-images", getClientSlides);
+router.get("/", getClientSlides);
 
 // Admin Routes
-router.get("/admin/hero-images", getHeroImages);
-router.post("/admin/hero-images", createHeroImage);
-router.put("/admin/hero-images/:id", updateHeroImage);
+router.get("/admin", getHeroImages);
+router.post("/admin", createHeroImage);
+router.put("/admin/:id", updateHeroImage);
 
 // Test Routes
-router.put("/admin/hero-images/reorder", reorderHeroImages);
-router.delete("/hero-images/delete-all", deleteAllHeroImages);
+router.put("/admin/reorder", reorderHeroImages);
+router.delete("/delete-all", deleteAllHeroImages);
 
 module.exports = router;
