@@ -1,5 +1,6 @@
 const express = require("express");
 const destinationController = require("../controllers/data/destinationController");
+const { validateDestination } = require("../middleware/validateFormData");
 const router = express.Router();
 
 // /api/destinations
@@ -15,6 +16,7 @@ router.post(
 router.post("/:id/draft", destinationController.saveAsDraft);
 router.post("/:id/publish", destinationController.publishDestination);
 router.put("/:id", destinationController.updateDestination);
+
 // TEST ROUTES
 router.delete("/dev/delete/:id", destinationController.deleteDestination);
 router.delete("/dev/delete-all", destinationController.deleteAllDestinations);
